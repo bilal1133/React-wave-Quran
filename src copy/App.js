@@ -15,15 +15,13 @@ function App() {
 	let ayaWord = [];
 	for (let index = 0; index < words.length; index++) {
 		ayaWord[index] = {
-			id: `${index}`,
+			id: index,
 			start: 0,
 			end: 0,
 			color: "",
 			word: words[index],
 		};
 	}
-
-console.log(ayaWord);
 
 	return (
 		<div className="App">
