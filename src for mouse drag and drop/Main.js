@@ -9,6 +9,7 @@ import WaveControlls from "./WaveControlls";
 export default function Main({ ayaWord, audio }) {
 	let [zoom, setZoom] = useState(0);
 	let [width, setWidth] = useState(0);
+	let [diffrenceInWidth, setdiffrenceInWidth] = useState(0);
 	let [playing, setPlaying] = useState(false);
 
 	useEffect(() => {
@@ -18,7 +19,8 @@ export default function Main({ ayaWord, audio }) {
 			tempWidth += el[index].getBoundingClientRect().width;
 		}
 
-		setWidth(tempWidth/2);
+		setdiffrenceInWidth(tempWidth - width);
+		setWidth(tempWidth);
 	}, [zoom]);
 
 	// console.log("NOw the width is ", width, "===", diffrenceInWidth);

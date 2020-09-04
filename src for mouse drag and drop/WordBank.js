@@ -5,9 +5,7 @@ import { DragDropContext, Draggable, Droppable } from "react-beautiful-dnd";
 import * as Draggable2 from "react-draggable";
 
 function App({ ayaWord, width, zoom }) {
-	let mousePositionX = 0;
-	let mousePositionY = 0;
-
+	let [number, setNumber] = useState(1);
 	const itemsFromBackend = [
 		// { id: uuid(), content: "First task" },
 		// { id: uuid(), content: "Second task" },
@@ -34,15 +32,17 @@ function App({ ayaWord, width, zoom }) {
 		el2.scrollLeft = 1000000;
 	}, []);
 
+	console.log(number);
+
 	const eventLogger = (data, index) => {
 		console.log("Data: ", data);
-		// console.log("index", index);
+		console.log("index", index);
 	};
 
 	const onDragEnd = (result, columns, setColumns) => {
 		if (!result.destination) return;
 		const { source, destination } = result;
-		// console.log("THE result id ", result);
+		console.log("THE result id ", result);
 		if (source.droppableId !== destination.droppableId) {
 			const sourceColumn = columns[source.droppableId];
 			const destColumn = columns[destination.droppableId];
@@ -50,11 +50,9 @@ function App({ ayaWord, width, zoom }) {
 			const destItems = [...destColumn.items];
 			const [removed] = sourceItems.splice(source.index, 1);
 			// TODO
-			// console.log("the removed item is", removed);
-			// let el = document.getElementById("dnd-container").scrollLeft;
-			console.log("new ", mousePositionX);
-			removed.position.x = mousePositionX;
-			// removed.position.y = mousePositionY;
+			console.log("the removed item is", removed);
+			let el = document.getElementById("dnd-container").scrollLeft;
+			removed.position.x = el;
 			// TODO
 			destItems.splice(destination.index, 0, removed);
 
@@ -118,6 +116,7 @@ function App({ ayaWord, width, zoom }) {
 												{(provided, snapshot) => {
 													return (
 														<div
+															onMouseUp={() => console.log("bilal")}
 															ref={provided.innerRef}
 															{...provided.draggableProps}
 															{...provided.dragHandleProps}
@@ -169,18 +168,6 @@ function App({ ayaWord, width, zoom }) {
 										{...provided.droppableProps}
 										ref={provided.innerRef}
 										id={"dnd-container"}
-										onMouseMove={(event) => {
-											mousePositionX =
-												event.pageX - event.target.getBoundingClientRect().x;
-											mousePositionY =
-												event.pageY - event.target.getBoundingClientRect().y;
-											console.log("set", mousePositionX," , ", mousePositionY);
-											// console.log(
-											// 	`mouse position: ${event.screenX}:${
-											// 		event.pageX - event.target.getBoundingClientRect().x
-											// 	}`
-											// );
-										}}
 										style={{
 											display: "flex",
 											width: `${width}px`,
@@ -231,6 +218,10 @@ function App({ ayaWord, width, zoom }) {
 					</div>
 				</div>
 			</DragDropContext>
+			<div>
+				<button onClick={() => setNumber(number++)}>+++++</button>
+				<button onClick={() => setNumber(number--)}>----</button>
+			</div>
 		</div>
 	);
 }

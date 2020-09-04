@@ -42,7 +42,6 @@ export default ({ audio, zoom, playing }) => {
 	};
 
 	const handleRegionClick = (e) => {
-		console.log("Billy is Awsome", e.originalArgs[0].start);
 		setTimeout(() => {
 			state.wavesurfer.seekTo(secondsToPosition(e.originalArgs[0].start));
 		}, 50);
@@ -104,19 +103,7 @@ export default ({ audio, zoom, playing }) => {
 					regions={regions}
 				/>
 			</ReactWaves>
-			<div>
-				<button
-					onClick={() => {
-						console.log("BIlal");
-						console.log(state.wavesurfer.drawer.width);
-						let el = document.querySelector("canvas");
-						console.log(el.getBoundingClientRect());
-					}}
-				>
-					{" "}
-					LOg the width{" "}
-				</button>
-			</div>
+			
 		</div>
 	);
 };
