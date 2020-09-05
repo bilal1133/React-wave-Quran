@@ -204,7 +204,7 @@ function App({ ayaWord, width, zoom }) {
 														// position={item.position}
 														// grid={[25, 25]}
 														// onStart={eventLogger}
-														// onDrag={eventLogger}    
+														// onDrag={eventLogger}
 														onStop={(e: MouseEvent, data: Object, index) =>
 															eventLogger({ x: data.x, y: data.y }, index)
 														}
