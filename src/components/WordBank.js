@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import { DragDropContext, Draggable, Droppable } from "react-beautiful-dnd";
 import * as Draggable2 from "react-draggable";
 
-function App({ ayaWord, width, zoom, duration, diffrenceInWidth }) {
+function App({ ayaWord, width, setZoom, duration, onPosChange }) {
 	const columnsFromBackend = {
 		first: {
 			name: "WordBank",
@@ -20,16 +20,13 @@ function App({ ayaWord, width, zoom, duration, diffrenceInWidth }) {
 		let a = 0;
 		let tempArr = columns.second.items;
 		for (let index = 0; index < tempArr.length; index++) {
-			// tempArr[index].location += diffrenceInWidth;
 			a = (tempArr[index].location / 100) * width;
-			tempArr[index].position.x = a;
+			tempArr[index].position.x = a - tempArr[index].parentWidth;
 		}
-
 		setColumns({
 			...columns,
 			second: { ...columns.second, items: [...tempArr] },
 		});
-
 	}, [width]);
 
 	useEffect(() => {
@@ -40,14 +37,15 @@ function App({ ayaWord, width, zoom, duration, diffrenceInWidth }) {
 	const eventLogger = (data, index) => {
 		const tempArr = columns.second.items;
 		tempArr[index].position = data;
-		tempArr[index].location = Math.abs((data.x / width) * 100);
-
+		tempArr[index].location = Math.abs(
+			((data.x + tempArr[index].parentWidth) / width) * 100
+		);
+		let timeStamp = (duration / width) * (data.x + 3);
+		tempArr[index].timeStamp = timeStamp;
 		setColumns({
 			...columns,
 			second: { ...columns.second, items: [...tempArr] },
 		});
-
-		let timeStamp = (duration / width) * (data.x + 3);
 		console.log("width", width);
 		console.log("duration", duration);
 		console.log("Data:", data.x + 3);
@@ -60,17 +58,23 @@ function App({ ayaWord, width, zoom, duration, diffrenceInWidth }) {
 	const onDragEnd = (result, columns, setColumns) => {
 		if (!result.destination) return;
 		const { source, destination } = result;
-		console.log("THE result id ", result);
 		if (source.droppableId !== destination.droppableId) {
+			let el2 = document.querySelector("#word-container").children;
+			let temp = 0;
+			for (let index = 0; index < el2.length; index++) {
+				temp += el2[index].offsetWidth;
+			}
+
 			const sourceColumn = columns[source.droppableId];
 			const destColumn = columns[destination.droppableId];
 			const sourceItems = [...sourceColumn.items];
 			const destItems = [...destColumn.items];
 			const [removed] = sourceItems.splice(source.index, 1);
 			// TODO
-			console.log("the removed item is", removed.timeStamp);
+
 			let el = document.getElementById("dnd-container").scrollLeft;
 			removed.position.x = el + 3;
+			removed.parentWidth = temp;
 
 			// TODO
 			destItems.splice(destination.index, 0, removed);
@@ -100,9 +104,31 @@ function App({ ayaWord, width, zoom, duration, diffrenceInWidth }) {
 			});
 		}
 	};
+	const handleExportData = () => {
+		let temp = columns.second.items;
+		let tempObj = {};
+		temp.forEach((element) => {
+			tempObj[element.id] = {
+				word: element.word,
+				timeStamp: element.timeStamp * 100,
+			};
+		});
+		console.log(tempObj);
+	};
 
 	return (
 		<div>
+			<div>
+				{columns.first.items.length === 0 ? (
+					<button
+						onClick={() => {
+							handleExportData();
+						}}
+					>
+						Export Data
+					</button>
+				) : null}
+			</div>
 			<DragDropContext
 				onDragEnd={(result) => onDragEnd(result, columns, setColumns)}
 			>
@@ -121,7 +147,7 @@ function App({ ayaWord, width, zoom, duration, diffrenceInWidth }) {
 										background: snapshot.isDraggingOver
 											? "lightblue"
 											: "lightgrey",
-										padding: 4,
+										// padding: 4,
 										minHeight: 50,
 									}}
 								>
@@ -173,6 +199,7 @@ function App({ ayaWord, width, zoom, duration, diffrenceInWidth }) {
 							height: "200px",
 							overflowX: "hidden",
 							overflowY: "hidden",
+							// width:`${width/(zoom)}px`,
 							border: "1px solid yellow",
 						}}
 					>
@@ -187,6 +214,11 @@ function App({ ayaWord, width, zoom, duration, diffrenceInWidth }) {
 										{...provided.droppableProps}
 										ref={provided.innerRef}
 										id={"word-container"}
+										onDoubleClick={() => setZoom("in")}
+										onContextMenu={(e) => {
+											e.preventDefault();
+											setZoom("out");
+										}}
 										style={{
 											display: "flex",
 											width: `${width}px`,
@@ -194,7 +226,7 @@ function App({ ayaWord, width, zoom, duration, diffrenceInWidth }) {
 												? "lightblue"
 												: "transparent",
 											// minHeight: 50,
-											height: "200px",
+											height: "250px",
 											border: "2px solid blue",
 											flexWrap: "wrap",
 										}}
@@ -211,19 +243,47 @@ function App({ ayaWord, width, zoom, duration, diffrenceInWidth }) {
 														// onStart={eventLogger}
 														// onDrag={eventLogger}
 														onStop={(e: MouseEvent, data: Object) => {
-															eventLogger({ x: data.x + 3, y: data.y }, index);
+															eventLogger(
+																{
+																	x: data.x,
+																	y: data.y,
+																},
+																index
+															);
 														}}
 														bounds="parent"
 													>
 														<div
 															style={{
-																height: "50px",
+																height: "40%",
 																// width: "50px",
-																padding: "10px",
-																border: "2px solid green",
+																padding: "10px 0",
+																paddingTop: "0",
+																borderLeft: "2px solid green",
 															}}
 														>
-															{item.word}
+															<div
+																className="badge badge-success"
+																style={{
+																	padding: "5px",
+																	border: "2px solid green",
+																	borderLeft: "none",
+																	"&:hover": {
+																		background: "#efefef",
+																	},
+																}}
+																onDoubleClick={() => setZoom("in")}
+																onContextMenu={(e) => {
+																	e.preventDefault();
+																	setZoom("out");
+																}}
+																onClick={() => {
+																	let a = (1 / duration) * item.timeStamp;
+																	onPosChange(a);
+																}}
+															>
+																{item.word}
+															</div>
 														</div>
 													</Draggable2>
 												);
