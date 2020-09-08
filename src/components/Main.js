@@ -52,19 +52,29 @@ export default function Main({ ayaWord, audio }) {
 	const handlePlaying = () => {
 		setPlaying(!playing);
 	};
-	const skipAhead = (amount = 1) => {
-		if (wavesurfer) {
-			if (position + amount < 0) {
-				wavesurfer.seekTo(secondsToPosition(0));
-				onPosChange(0, wavesurfer);
+	const skipAhead = (direction) => {
+		let amount = ((duration / zoom) * 3) / 100;
+		if (direction === "frwd") {
+			if (position + amount < duration) {
+				wavesurfer.seekTo(secondsToPosition(position + amount));
+				onPosChange(position + amount, wavesurfer);
 				return;
-			} else if (position + amount > duration) {
+			} else {
 				wavesurfer.seekTo(secondsToPosition(duration));
 				onPosChange(duration, wavesurfer);
-				return;
 			}
-			wavesurfer.seekTo(secondsToPosition(position + amount));
-			onPosChange(position + amount, wavesurfer);
+		}
+		console.log("amount", amount);
+		console.log("direction", direction);
+		if (direction === "bkwrd") {
+			if (position - amount > 0) {
+				console.log("amount", amount);
+				wavesurfer.seekTo(secondsToPosition(position - amount));
+				onPosChange(position - amount, wavesurfer);
+			} else {
+				wavesurfer.seekTo(secondsToPosition(0));
+				onPosChange(0, wavesurfer);
+			}
 		}
 	};
 

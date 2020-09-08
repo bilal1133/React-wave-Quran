@@ -17,8 +17,32 @@ export default ({
 			let el = document.getElementById("dnd-container");
 			el.scrollLeft = e.target.scrollLeft;
 		};
-	}, []);
 
+		let el = document.querySelector("wave");
+		let x = 0,
+			left = 0;
+
+		let draggingFunction = (e) => {
+			console.log("Mouse moved", el.scrollLeft);
+			// el.scrollLeft += 10;
+			document.addEventListener("mouseup", (e) => {
+				e.preventDefault();
+				document.removeEventListener("mousemove", draggingFunction);
+			});
+
+			el.scrollLeft = left - e.pageX + x;
+		};
+
+		el.addEventListener("mousedown", (e) => {
+			console.log("Handling mousedown");
+			e.preventDefault();
+
+			x = e.pageX;
+			left = el.scrollLeft;
+
+			document.addEventListener("mousemove", draggingFunction);
+		});
+	}, []);
 	// const onLoading = ({ wavesurfer, originalArgs = [] }) => {
 	// 	handleWaveSurfer({ wavesurfer, originalArgs });
 	// };
@@ -67,12 +91,13 @@ export default ({
 					fillParent: true,
 					waveColor: "#D1D6DA",
 					backend: "MediaElement",
+
 					//!
 					autoCenter: true,
 					autoCenterRate: 0,
 					autoCenterImmediately: false,
 					dragSelection: false,
-					scrollParent: true,
+					scrollParent: false,
 				}}
 				volume={volume}
 				zoom={zoom}

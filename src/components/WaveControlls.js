@@ -10,6 +10,15 @@ export default function WaveControlls({
 	wavesurfer,
 	setVolume,
 }) {
+	document.onkeydown = function (e) {
+		var e = e || window.event; // for IE to cover IEs window event-object
+		if (e.which === 37) {
+			skipAhead("bkwrd");
+		}
+		if (e.which === 39) {
+			skipAhead("frwd");
+		}
+	};
 	document.onkeyup = function (e) {
 		var e = e || window.event; // for IE to cover IEs window event-object
 		if (e.which === 107) {
@@ -18,7 +27,7 @@ export default function WaveControlls({
 		if (e.which === 109) {
 			handleZoom("out");
 		}
-		if (e.which === 32) {
+		if (e.which === 65) {
 			setPlaying();
 		}
 		if (e.altKey && e.which === 40) {
@@ -30,12 +39,6 @@ export default function WaveControlls({
 		if (e.which === 77) {
 			e.preventDefault();
 			setVolume("mute");
-		}
-		if (e.which === 37) {
-			skipAhead(-1);
-		}
-		if (e.which === 39) {
-			skipAhead(+1);
 		}
 	};
 
