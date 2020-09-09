@@ -14,7 +14,19 @@ export default function Main({ ayaWord, audio }) {
 	let [position, setPosition] = useState(0);
 	let [wavesurfer, setWavesurfer] = useState(null);
 	let [volume, setVolume] = useState(1);
+	// two containers for drag and drop
+	const dnd_columns = {
+		first: {
+			name: "WordBank",
+			items: ayaWord,
+		},
+		second: {
+			name: "Word Placing Space",
+			items: [],
+		},
+	};
 
+	const [columns, setColumns] = useState(dnd_columns);
 	useEffect(() => {
 		handleSetWidth();
 	}, [zoom]);
@@ -49,11 +61,21 @@ export default function Main({ ayaWord, audio }) {
 		}
 	};
 
+	// controll the play or pause ()
 	const handlePlaying = () => {
 		setPlaying(!playing);
 	};
-	const skipAhead = (direction) => {
+	// to move with in Audio based on the direction frwd/bkwrd or exact time stamp
+	// (direction{'frwd'/'bkwrd'} , location/timestamp)
+	const skipAhead = (direction, location) => {
 		let amount = ((duration / zoom) * 3) / 100;
+		if (location && location !== position) {
+			wavesurfer.seekTo(secondsToPosition(location));
+			onPosChange(location, wavesurfer);
+			console.log("===========");
+			console.log("Skipping", location);
+			return;
+		}
 		if (direction === "frwd") {
 			if (position + amount < duration) {
 				wavesurfer.seekTo(secondsToPosition(position + amount));
@@ -77,10 +99,41 @@ export default function Main({ ayaWord, audio }) {
 			}
 		}
 	};
+	//  jump to the next or the previous word in terms of audio
+	const jumpToNextWord = () => {
+		let jumpTime = duration;
 
+		for (let index = 0; index < columns.second.items.length; index++) {
+			let temp = columns.second.items[index].timeStamp;
+			if (temp > position) {
+				if (temp < jumpTime) {
+					jumpTime = temp;
+					continue;
+				}
+			}
+		}
+		skipAhead(undefined, jumpTime);
+	};
+	// to jump to the next or the previous word in terms of audio
+	const jumpToPreviousWord = () => {
+		let jumpTime = 0;
+		// finding the next timeStamp closest to the current Position
+		for (let index = 0; index < columns.second.items.length; index++) {
+			let temp = columns.second.items[index].timeStamp;
+			if (temp < position) {
+				if (temp > jumpTime) {
+					jumpTime = temp;
+				}
+			}
+		}
+		skipAhead(undefined, jumpTime);
+	};
+
+	// convert the position in to secods based on the duration
 	const secondsToPosition = (sec) => {
 		return (1 / duration) * sec;
 	};
+	// to increase or decrese the volume (up/down)
 	const handleVolume = (props) => {
 		if (volume < 0.9 && props === "up") {
 			setVolume(volume + 0.1);
@@ -105,7 +158,8 @@ export default function Main({ ayaWord, audio }) {
 						position: "relative",
 						top: "138px",
 						zIndex: 500,
-						maxWidth: "740px",
+						maxWidth: "90%",
+						margin: "auto",
 					}}
 				>
 					<WordBank
@@ -113,12 +167,15 @@ export default function Main({ ayaWord, audio }) {
 						ayaWord={ayaWord}
 						width={width}
 						setZoom={handleZoom}
-						onPosChange={onPosChange}
+						skipAhead={skipAhead}
+						columns={columns}
+						setColumns={setColumns}
 					/>
 				</div>
 				<div
 					style={{
-						maxWidth: "740px",
+						maxWidth: "90%",
+						margin: "auto",
 					}}
 				>
 					<Wave
@@ -144,6 +201,8 @@ export default function Main({ ayaWord, audio }) {
 					setPlaying={handlePlaying}
 					skipAhead={skipAhead}
 					setVolume={handleVolume}
+					jumpToNextWord={jumpToNextWord}
+					jumpToPreviousWord={jumpToPreviousWord}
 				/>
 			</div>
 		</div>

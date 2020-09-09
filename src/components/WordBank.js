@@ -4,18 +4,10 @@ import React, { useState, useEffect } from "react";
 import { DragDropContext, Draggable, Droppable } from "react-beautiful-dnd";
 import * as Draggable2 from "react-draggable";
 
-function App({ ayaWord, width, setZoom, duration, onPosChange }) {
-	const columnsFromBackend = {
-		first: {
-			name: "WordBank",
-			items: ayaWord,
-		},
-		second: {
-			name: "Word Placing Space",
-			items: [],
-		},
-	};
-	const [columns, setColumns] = useState(columnsFromBackend);
+function App({ width, setZoom, duration, columns, setColumns, skipAhead }) {
+	
+
+	// to Calculate the new location as the user zoom
 	useEffect(() => {
 		let a = 0;
 		let tempArr = columns.second.items;
@@ -29,18 +21,24 @@ function App({ ayaWord, width, setZoom, duration, onPosChange }) {
 		});
 	}, [width]);
 
+	// to scroll Left for the first time for the word band container
 	useEffect(() => {
 		let el2 = document.getElementById("wordbank-continer");
 		el2.scrollLeft = 1000000;
 	}, []);
 
+	// called every time when the user stop draging
 	const eventLogger = (data, index) => {
 		const tempArr = columns.second.items;
 		tempArr[index].position = data;
+		// calculate the location in temrms of percentage
 		tempArr[index].location = Math.abs(
 			((data.x + tempArr[index].parentWidth) / width) * 100
 		);
-		let timeStamp = (duration / width) * (data.x + 3);
+		// calculte the timeStamp
+		let timeStamp =
+			(duration / width) * (data.x + tempArr[index].parentWidth + 3);
+		//updating the timeStamp
 		tempArr[index].timeStamp = timeStamp;
 		setColumns({
 			...columns,
@@ -54,7 +52,7 @@ function App({ ayaWord, width, setZoom, duration, onPosChange }) {
 		console.log("timeStamp", timeStamp);
 		// console.log("index", index);
 	};
-
+	// called as the word is draged from the wordbank to the
 	const onDragEnd = (result, columns, setColumns) => {
 		if (!result.destination) return;
 		const { source, destination } = result;
@@ -223,7 +221,7 @@ function App({ ayaWord, width, setZoom, duration, onPosChange }) {
 											display: "flex",
 											width: `${width}px`,
 											background: snapshot.isDraggingOver
-												? "lightblue"
+												? "rgb(69, 108, 134,0.3)"
 												: "transparent",
 											// minHeight: 50,
 											height: "250px",
@@ -239,7 +237,7 @@ function App({ ayaWord, width, setZoom, duration, onPosChange }) {
 														// handle=".handle"
 														defaultPosition={item.position}
 														position={item.position}
-														// grid={[25, 25]}
+														grid={[25, 25]}
 														// onStart={eventLogger}
 														// onDrag={eventLogger}
 														onStop={(e: MouseEvent, data: Object) => {
@@ -278,8 +276,7 @@ function App({ ayaWord, width, setZoom, duration, onPosChange }) {
 																	setZoom("out");
 																}}
 																onClick={() => {
-																	let a = (1 / duration) * item.timeStamp;
-																	onPosChange(a);
+																	skipAhead(undefined, item.timeStamp);
 																}}
 															>
 																{item.word}

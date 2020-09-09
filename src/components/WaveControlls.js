@@ -9,7 +9,10 @@ export default function WaveControlls({
 	skipAhead,
 	wavesurfer,
 	setVolume,
+	jumpToNextWord,
+	jumpToPreviousWord,
 }) {
+	// * 🎹 shotcuts
 	document.onkeydown = function (e) {
 		var e = e || window.event; // for IE to cover IEs window event-object
 		if (e.which === 37) {
@@ -40,10 +43,39 @@ export default function WaveControlls({
 			e.preventDefault();
 			setVolume("mute");
 		}
+		if (e.which === 78) {
+			jumpToNextWord();
+		}
+		if (e.which === 80) {
+			jumpToPreviousWord();
+		}
 	};
 
 	return (
 		<div>
+			<div className="next">
+				<button
+					onClick={() => {
+						console.log("next");
+						jumpToNextWord();
+					}}
+				>
+					{" "}
+					{"next"}{" "}
+				</button>
+			</div>
+			<div className="prev">
+				<button
+					onClick={() => {
+						console.log("Previous");
+						jumpToPreviousWord();
+					}}
+				>
+					{" "}
+					{"Previous"}{" "}
+				</button>
+			</div>
+
 			<div
 				className="play button"
 				onClick={() => {

@@ -57,7 +57,7 @@ export default ({
 			style={
 				{
 					// backgroundColor: "grey",
-					// width: "640px",
+					width: "100%",
 					// margin: "auto",
 					// overflowX: "auto",
 					// overflowY: "hidden",
