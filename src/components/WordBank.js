@@ -5,8 +5,6 @@ import { DragDropContext, Draggable, Droppable } from "react-beautiful-dnd";
 import * as Draggable2 from "react-draggable";
 
 function App({ width, setZoom, duration, columns, setColumns, skipAhead }) {
-	
-
 	// to Calculate the new location as the user zoom
 	useEffect(() => {
 		let a = 0;
@@ -38,6 +36,8 @@ function App({ width, setZoom, duration, columns, setColumns, skipAhead }) {
 		// calculte the timeStamp
 		let timeStamp =
 			(duration / width) * (data.x + tempArr[index].parentWidth + 3);
+		//jumping to that time stamp in audio
+		skipAhead(undefined, timeStamp);
 		//updating the timeStamp
 		tempArr[index].timeStamp = timeStamp;
 		setColumns({
@@ -68,13 +68,9 @@ function App({ width, setZoom, duration, columns, setColumns, skipAhead }) {
 			const sourceItems = [...sourceColumn.items];
 			const destItems = [...destColumn.items];
 			const [removed] = sourceItems.splice(source.index, 1);
-			// TODO
-
 			let el = document.getElementById("dnd-container").scrollLeft;
 			removed.position.x = el + 3;
 			removed.parentWidth = temp;
-
-			// TODO
 			destItems.splice(destination.index, 0, removed);
 
 			setColumns({
@@ -108,7 +104,9 @@ function App({ width, setZoom, duration, columns, setColumns, skipAhead }) {
 		temp.forEach((element) => {
 			tempObj[element.id] = {
 				word: element.word,
-				timeStamp: element.timeStamp * 100,
+				timeStamp: element.timeStamp,
+				Wordnumber: element.id,
+				location: element.location,
 			};
 		});
 		console.log(tempObj);
@@ -117,15 +115,13 @@ function App({ width, setZoom, duration, columns, setColumns, skipAhead }) {
 	return (
 		<div>
 			<div>
-				{columns.first.items.length === 0 ? (
-					<button
-						onClick={() => {
-							handleExportData();
-						}}
-					>
-						Export Data
-					</button>
-				) : null}
+				<button
+					onClick={() => {
+						handleExportData();
+					}}
+				>
+					Export Data
+				</button>
 			</div>
 			<DragDropContext
 				onDragEnd={(result) => onDragEnd(result, columns, setColumns)}
@@ -198,7 +194,7 @@ function App({ width, setZoom, duration, columns, setColumns, skipAhead }) {
 							overflowX: "hidden",
 							overflowY: "hidden",
 							// width:`${width/(zoom)}px`,
-							border: "1px solid yellow",
+							// border: "1px solid yellow",
 						}}
 					>
 						<Droppable
@@ -221,11 +217,11 @@ function App({ width, setZoom, duration, columns, setColumns, skipAhead }) {
 											display: "flex",
 											width: `${width}px`,
 											background: snapshot.isDraggingOver
-												? "rgb(69, 108, 134,0.3)"
-												: "transparent",
+												? "rgb(69, 108, 134,0.2)"
+												: "rgb(69, 108, 134,0.1)",
 											// minHeight: 50,
-											height: "250px",
-											border: "2px solid blue",
+											height: "300px",
+											// border: "2px solid blue",
 											flexWrap: "wrap",
 										}}
 									>
@@ -237,7 +233,7 @@ function App({ width, setZoom, duration, columns, setColumns, skipAhead }) {
 														// handle=".handle"
 														defaultPosition={item.position}
 														position={item.position}
-														grid={[25, 25]}
+														// grid={[25, 25]}
 														// onStart={eventLogger}
 														// onDrag={eventLogger}
 														onStop={(e: MouseEvent, data: Object) => {
@@ -275,9 +271,7 @@ function App({ width, setZoom, duration, columns, setColumns, skipAhead }) {
 																	e.preventDefault();
 																	setZoom("out");
 																}}
-																onClick={() => {
-																	skipAhead(undefined, item.timeStamp);
-																}}
+														
 															>
 																{item.word}
 															</div>

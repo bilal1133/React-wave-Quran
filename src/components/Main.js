@@ -5,7 +5,7 @@ import React, { useState, useEffect } from "react";
 import WordBank from "./WordBank";
 import Wave from "./Wave";
 import WaveControlls from "./WaveControlls";
-
+import KeyboardhotKeys from "./KeyboardhotKeys";
 export default function Main({ ayaWord, audio }) {
 	let [zoom, setZoom] = useState(1);
 	let [width, setWidth] = useState(1);
@@ -31,7 +31,6 @@ export default function Main({ ayaWord, audio }) {
 		handleSetWidth();
 	}, [zoom]);
 
-	//TODO styles_reactWaves__1M36F  Set the padding to none
 	const handleSetWidth = () => {
 		let tempWidth = 0;
 		let el = document.querySelectorAll("wave canvas");
@@ -86,8 +85,6 @@ export default function Main({ ayaWord, audio }) {
 				onPosChange(duration, wavesurfer);
 			}
 		}
-		console.log("amount", amount);
-		console.log("direction", direction);
 		if (direction === "bkwrd") {
 			if (position - amount > 0) {
 				console.log("amount", amount);
@@ -116,7 +113,7 @@ export default function Main({ ayaWord, audio }) {
 	};
 	// to jump to the next or the previous word in terms of audio
 	const jumpToPreviousWord = () => {
-		let jumpTime = 0;
+		let jumpTime = 0.1;
 		// finding the next timeStamp closest to the current Position
 		for (let index = 0; index < columns.second.items.length; index++) {
 			let temp = columns.second.items[index].timeStamp;
@@ -126,6 +123,8 @@ export default function Main({ ayaWord, audio }) {
 				}
 			}
 		}
+
+		console.log("The jump time is ", jumpTime);
 		skipAhead(undefined, jumpTime);
 	};
 
@@ -156,7 +155,7 @@ export default function Main({ ayaWord, audio }) {
 				<div
 					style={{
 						position: "relative",
-						top: "138px",
+						top: "135px",
 						zIndex: 500,
 						maxWidth: "90%",
 						margin: "auto",
@@ -204,6 +203,7 @@ export default function Main({ ayaWord, audio }) {
 					jumpToNextWord={jumpToNextWord}
 					jumpToPreviousWord={jumpToPreviousWord}
 				/>
+				<KeyboardhotKeys />
 			</div>
 		</div>
 	);

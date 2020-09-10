@@ -12,10 +12,18 @@ export default ({
 	volume,
 }) => {
 	useEffect(() => {
-		document.querySelector(".styles_reactWaves__1M36F").style.padding = "5px";
+		document.querySelector(".styles_reactWaves__1M36F").style.padding = " 0px ";
+		document.querySelector(".styles_reactWaves__1M36F").style.margin =
+			"30px  0px  0px 0px ";
+		// "0px 40px 0px 0px";
+		document.querySelector(
+			"#dnd-container"
+		).style.width = document.querySelector(".wave").offsetWidth;
 		document.querySelector("wave").onscroll = function (e) {
 			let el = document.getElementById("dnd-container");
+			let el2 = document.getElementById("timeline");
 			el.scrollLeft = e.target.scrollLeft;
+			el2.scrollLeft = e.target.scrollLeft;
 		};
 
 		let el = document.querySelector("wave");
@@ -43,26 +51,66 @@ export default ({
 			document.addEventListener("mousemove", draggingFunction);
 		});
 	}, []);
-	// const onLoading = ({ wavesurfer, originalArgs = [] }) => {
-	// 	handleWaveSurfer({ wavesurfer, originalArgs });
-	// };
 
 	const onLoading = ({ wavesurfer, originalArgs = [] }) => {
 		console.log(wavesurfer);
 		setWavesurfer(wavesurfer);
 	};
 
+	const defaultFormatTimeCallback = (seconds, pxPerSec) => {
+		if (seconds / 60 > 1) {
+			// calculate minutes and seconds from seconds count
+			const minutes = parseInt(seconds / 60, 10);
+			seconds = parseInt(seconds % 60, 10);
+			// fill up seconds with zeroes
+			seconds = seconds < 10 ? "0" + seconds : seconds;
+			return `${minutes}:${seconds}`;
+		}
+		return Math.round(seconds * 1000) / 1000;
+	};
+
+	function defaultTimeInterval(pxPerSec) {
+		if (pxPerSec >= 25) {
+			return 1;
+		} else if (pxPerSec * 5 >= 25) {
+			return 5;
+		} else if (pxPerSec * 15 >= 25) {
+			return 15;
+		}
+		return Math.ceil(0.5 / pxPerSec) * 60;
+	}
+
+	function defaultPrimaryLabelInterval(pxPerSec) {
+		if (pxPerSec >= 25) {
+			return 10;
+		} else if (pxPerSec * 5 >= 25) {
+			return 6;
+		} else if (pxPerSec * 15 >= 25) {
+			return 4;
+		}
+		return 4;
+	}
+
+	function defaultSecondaryLabelInterval(pxPerSec) {
+		if (pxPerSec >= 25) {
+			return 5;
+		} else if (pxPerSec * 5 >= 25) {
+			return 2;
+		} else if (pxPerSec * 15 >= 25) {
+			return 2;
+		}
+		return 2;
+	}
+
 	return (
 		<div
-			style={
-				{
-					// backgroundColor: "grey",
-					width: "100%",
-					// margin: "auto",
-					// overflowX: "auto",
-					// overflowY: "hidden",
-				}
-			}
+			style={{
+				// backgroundColor: "grey",
+				width: "100%",
+				// margin: "auto",
+				// overflowX: "auto",
+				// overflowY: "hidden",
+			}}
 		>
 			<ReactWaves
 				cursorColor="black"
@@ -70,14 +118,6 @@ export default ({
 				audioFile={audio}
 				className={"react-waves"}
 				options={{
-					// barHeight: 2,
-					// cursorWidth: 0,
-					// height: 200,
-					// hideScrollbar: true,
-					// progressColor: '#EC407A',
-					// responsive: true,
-					// waveColor: '#D1D6DA',
-
 					// mediaControls: true,
 					// barGap: 0,
 					// barWidth: 1,
@@ -91,8 +131,6 @@ export default ({
 					fillParent: true,
 					waveColor: "#D1D6DA",
 					backend: "MediaElement",
-
-					//!
 					autoCenter: true,
 					autoCenterRate: 0,
 					autoCenterImmediately: false,
@@ -106,18 +144,30 @@ export default ({
 				onPosChange={onPosChange}
 				onLoading={onLoading}
 				onWaveformReady={onWaveformReady}
-			>
-				<div>
-					<h5>Alt + '➕' to zoom In</h5>
-					<h5>Alt + '➖' to zoom Out </h5>
-					<h5>Alt + ' ⬆ arraow' to Increase Volume </h5>
-					<h5>Alt + ' ⬇ arrow' to Decrease Volume </h5>
-					<h5>'⬅Arrow' to move left on audio </h5>
-					<h5>'➡ Arrow' to move Right</h5>
-					<h5>M to mute and un-mute </h5>
-					<h5> 'Space bar' to pause / play </h5>
-				</div>
-			</ReactWaves>
+				timelineOptions={{
+					container: "#timeline",
+					height: 20,
+					notchPercentHeight: 50,
+					labelPadding: 5,
+					unlabeledNotchColor: "#c0c0c0",
+					primaryColor: "#000",
+					secondaryColor: "#c0c0c0",
+					primaryFontColor: "#000",
+					secondaryFontColor: "#000",
+					fontFamily: "verdana",
+					fontSize: 10,
+					duration: null,
+					zoomDebounce: false,
+					formatTimeCallback: defaultFormatTimeCallback,
+					timeInterval: defaultTimeInterval,
+					primaryLabelInterval: defaultPrimaryLabelInterval,
+					secondaryLabelInterval: defaultSecondaryLabelInterval,
+					offset: 0,
+				}}
+			></ReactWaves>
+
+			<div id="timeline" style={{ margin: "0 auto" }} />
+		
 		</div>
 	);
 };

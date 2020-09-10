@@ -17,7 +17,7 @@ function App() {
 	let ayaWord = [];
 	for (let index = 0; index < words.length; index++) {
 		ayaWord[index] = {
-			id: `${index}`,
+			id: `${words.length - index }`,
 			position: { x: -3, y: -5 },
 			timeStamp: 0,
 			location: 1,
