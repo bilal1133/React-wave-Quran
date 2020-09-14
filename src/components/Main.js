@@ -6,6 +6,7 @@ import WordBank from "./WordBank";
 import Wave from "./Wave";
 import WaveControlls from "./WaveControlls";
 import KeyboardhotKeys from "./KeyboardhotKeys";
+import StateInfo from "./StateInfo";
 export default function Main({ ayaWord, audio }) {
 	let [zoom, setZoom] = useState(1);
 	let [width, setWidth] = useState(1);
@@ -14,6 +15,11 @@ export default function Main({ ayaWord, audio }) {
 	let [position, setPosition] = useState(0);
 	let [wavesurfer, setWavesurfer] = useState(null);
 	let [volume, setVolume] = useState(1);
+	let [audioRate, setAudioRate] = useState(1);
+	let [fontSize, setFontSize] = useState(12);
+	let [clickToChange, setClickToChange] = useState(true);
+	let [loop, setLoop] = useState(false);
+	let [loopEnding, setLoopEnding] = useState(0);
 	// two containers for drag and drop
 	const dnd_columns = {
 		first: {
@@ -30,6 +36,36 @@ export default function Main({ ayaWord, audio }) {
 	useEffect(() => {
 		handleSetWidth();
 	}, [zoom]);
+	useEffect(() => {
+		if (position >= loopEnding && loop === true) {
+			jumpToPreviousWord();
+		}
+	}, [loop, position]);
+
+	const loopCurrentSegment = () => {
+		if (loop === true) {
+			handlePlaying();
+			setLoop(false);
+			return;
+		}
+		jumpToPreviousWord();
+		setPlaying(true);
+		setLoop(true);
+		let jumpTime = duration;
+
+		for (let index = 0; index < columns.second.items.length; index++) {
+			let temp = columns.second.items[index].timeStamp;
+			if (temp > position) {
+				if (temp < jumpTime) {
+					jumpTime = temp;
+					continue;
+				}
+			}
+		}
+		setLoopEnding(jumpTime);
+		// console.log("jumpTime", jumpTime);
+		// setLoop(!loop);
+	};
 
 	const handleSetWidth = () => {
 		let tempWidth = 0;
@@ -56,6 +92,10 @@ export default function Main({ ayaWord, audio }) {
 	const onPosChange = (pos, wavesurf) => {
 		if (pos !== position) {
 			wavesurf && setWavesurfer(wavesurfer);
+			if (pos < 1) {
+				setPosition(duration * pos);
+				return;
+			}
 			setPosition(pos);
 		}
 	};
@@ -71,8 +111,6 @@ export default function Main({ ayaWord, audio }) {
 		if (location && location !== position) {
 			wavesurfer.seekTo(secondsToPosition(location));
 			onPosChange(location, wavesurfer);
-			console.log("===========");
-			console.log("Skipping", location);
 			return;
 		}
 		if (direction === "frwd") {
@@ -87,7 +125,6 @@ export default function Main({ ayaWord, audio }) {
 		}
 		if (direction === "bkwrd") {
 			if (position - amount > 0) {
-				console.log("amount", amount);
 				wavesurfer.seekTo(secondsToPosition(position - amount));
 				onPosChange(position - amount, wavesurfer);
 			} else {
@@ -123,11 +160,106 @@ export default function Main({ ayaWord, audio }) {
 				}
 			}
 		}
-
-		console.log("The jump time is ", jumpTime);
 		skipAhead(undefined, jumpTime);
 	};
 
+	// Automatically drag the word from the wordbank and place to the transparent window.
+	// either pass the index or the numbers to remove
+	const moveWordFromTopToBottom = (number, index) => {
+		if (index || index === 0) {
+			if (columns.first.items.length === 0) {
+				return;
+			}
+			let el2 = document.querySelector("#word-container").children;
+			let temp = 0;
+
+			for (let index = 0; index < el2.length; index++) {
+				temp += el2[index].offsetWidth;
+			}
+			const sourceItems = columns.first.items;
+			const destItems = columns.second.items;
+			const [removed] = sourceItems.splice(index, 1);
+			let el = document.getElementById("dnd-container").scrollLeft;
+			removed.position.x = el + 3;
+			removed.parentWidth = temp;
+			// destItems.push(removed);
+			destItems.splice(0, 0, removed);
+			setColumns({
+				...columns,
+				first: {
+					...columns.first,
+					items: sourceItems,
+				},
+				second: {
+					...columns.second,
+					items: destItems,
+				},
+			});
+			return;
+		}
+
+		for (let i = 0; i < number; i++) {
+			if (columns.first.items.length === 0) {
+				return;
+			}
+			let el2 = document.querySelector("#word-container").children;
+			let temp = 0;
+			for (let i = 0; i < el2.length; i++) {
+				temp += el2[i].offsetWidth;
+			}
+			// const sourceColumn = columns[source.droppableId];
+			// const destColumn = columns[destination.droppableId];
+			const sourceItems = columns.first.items;
+			const destItems = columns.second.items;
+			const removed = sourceItems.pop();
+			let el = document.getElementById("dnd-container").scrollLeft;
+			removed.position.x = el + 3;
+			removed.parentWidth = temp;
+			// destItems.splice(destination.i, 0, removed);
+			// destItems.push(removed);
+			destItems.splice(0, 0, removed);
+			setColumns({
+				...columns,
+				first: {
+					...columns.first,
+					items: sourceItems,
+				},
+				second: {
+					...columns.second,
+					items: destItems,
+				},
+			});
+		}
+	};
+	// Align the not used words based on the scroll
+	// can also be used to remove not used words
+	const alignNotUsedWords = (remove) => {
+		let tempArr = columns.second.items;
+		// TODO
+		// if (remove) {
+		// 	for (let index = 0; index < tempArr.length; index++) {
+		// 		if (tempArr[index].position.y < 40) {
+		// 			tempArr[index].position.x = el;
+		// 		}
+		// 	}
+		// }
+
+		let el = document.getElementById("dnd-container").scrollLeft;
+
+		for (let index = 0; index < tempArr.length; index++) {
+			if (tempArr[index].position.y < 40) {
+				
+				tempArr[index].position.x = el;
+			}
+		}
+		setColumns({
+			...columns,
+			second: {
+				...columns.second,
+				items: tempArr,
+			},
+		});
+	};
 	// convert the position in to secods based on the duration
 	const secondsToPosition = (sec) => {
 		return (1 / duration) * sec;
@@ -149,13 +281,71 @@ export default function Main({ ayaWord, audio }) {
 		}
 	};
 
+	/// increase or decrease the speed of the audio
+	const handleAudioRate = (value) => {
+		if (value === "inc" && audioRate < 4) {
+			setAudioRate(audioRate + 0.1);
+		} else if (value === "dec" && audioRate > 0.2) {
+			setAudioRate(audioRate - 0.1);
+		}
+	};
+	/// increase or decrease the font
+	const handleFontSize = (value) => {
+		if (value === "inc" && fontSize < 20) {
+			setFontSize(fontSize + 2);
+		} else if (value === "dec" && fontSize > 12) {
+			setFontSize(fontSize - 2);
+		}
+	};
+	// map the first word and automatically map the word on to the audio at current timeStamp
+	// current audio position
+	const handleKeyboardMap = () => {
+		let tempArr = columns.second.items;
+		// finding the first word based on its y position
+		for (let index = tempArr.length - 1; index >= 0; index--) {
+			if (tempArr[index].position.y < 40) {
+				if (position > 1) {
+					let tempPosition =
+						(width / duration) * position - tempArr[index].parentWidth;
+					tempArr[index].position.x = tempPosition;
+					tempArr[index].position.y = 91;
+
+					// calculate the location in temrms of percentage
+					tempArr[index].location = Math.abs(
+						((tempPosition + tempArr[index].parentWidth) / width) * 100
+					);
+
+					setColumns({
+						...columns,
+
+						second: {
+							...columns.second,
+							items: tempArr,
+						},
+					});
+					// alert(`${width} - ${position} - ${duration} - ${tempPosition} - `);
+				}
+
+				// tempArr[index].location = Math.abs(
+				// 	((data.x + tempArr[index].parentWidth) / width) * 100
+				// );
+
+				break;
+			}
+		}
+	};
 	return (
 		<div>
-			<div>
+			<div
+				style={{
+					marginTop: "15px",
+				}}
+			>
 				<div
 					style={{
 						position: "relative",
-						top: "135px",
+						// bottom: "0px",
+						left: "1.2rem",
 						zIndex: 500,
 						maxWidth: "90%",
 						margin: "auto",
@@ -165,44 +355,69 @@ export default function Main({ ayaWord, audio }) {
 						duration={duration}
 						ayaWord={ayaWord}
 						width={width}
+						fontSize={fontSize}
 						setZoom={handleZoom}
 						skipAhead={skipAhead}
 						columns={columns}
 						setColumns={setColumns}
+						moveWordFromTopToBottom={moveWordFromTopToBottom}
+						clickToChange={clickToChange}
 					/>
 				</div>
 				<div
 					style={{
-						maxWidth: "90%",
+						position: "relative",
+						bottom: "130px",
+						left: "1.2rem",
 						margin: "auto",
+						marginBottom: "-125px",
+						maxWidth: "90%",
 					}}
 				>
 					<Wave
 						playing={playing}
 						audio={audio}
 						zoom={zoom}
+						volume={volume}
+						audioRate={audioRate}
+						position={position}
 						setDuration={setDuration}
 						handleSetWidth={handleSetWidth}
-						position={position}
 						onPosChange={onPosChange}
 						setWavesurfer={setWavesurfer}
 						onWaveformReady={onWaveformReady}
-						volume={volume}
 					/>
 				</div>
 			</div>
 			<div
 			// style={{clear:'left'}}
 			>
+				<StateInfo
+					zoom={zoom}
+					volume={volume}
+					audioRate={audioRate}
+					fontSize={fontSize}
+					position={position}
+				/>
 				<WaveControlls
 					playing={playing}
+					loop={loop}
 					handleZoom={handleZoom}
 					setPlaying={handlePlaying}
 					skipAhead={skipAhead}
 					setVolume={handleVolume}
 					jumpToNextWord={jumpToNextWord}
 					jumpToPreviousWord={jumpToPreviousWord}
+					moveWordFromTopToBottom={moveWordFromTopToBottom}
+					alignNotUsedWords={alignNotUsedWords}
+					handleAudioRate={handleAudioRate}
+					handleFontSize={handleFontSize}
+					loopCurrentSegment={loopCurrentSegment}
+					handleKeyboardMap={handleKeyboardMap}
+					clickToChange={clickToChange}
+					setClickToChange={setClickToChange}
 				/>
+
 				<KeyboardhotKeys />
 			</div>
 		</div>

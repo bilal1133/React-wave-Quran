@@ -4,7 +4,17 @@ import React, { useState, useEffect } from "react";
 import { DragDropContext, Draggable, Droppable } from "react-beautiful-dnd";
 import * as Draggable2 from "react-draggable";
 
-function App({ width, setZoom, duration, columns, setColumns, skipAhead }) {
+function App({
+	width,
+	setZoom,
+	duration,
+	columns,
+	setColumns,
+	skipAhead,
+	moveWordFromTopToBottom,
+	fontSize,
+	clickToChange,
+}) {
 	// to Calculate the new location as the user zoom
 	useEffect(() => {
 		let a = 0;
@@ -23,11 +33,18 @@ function App({ width, setZoom, duration, columns, setColumns, skipAhead }) {
 	useEffect(() => {
 		let el2 = document.getElementById("wordbank-continer");
 		el2.scrollLeft = 1000000;
+		let containerWidth = document.querySelector(".react-waves").offsetWidth;
+		setContainerWidth(containerWidth);
 	}, []);
-
+	let [containerWidth, setContainerWidth] = useState(0);
 	// called every time when the user stop draging
 	const eventLogger = (data, index) => {
 		const tempArr = columns.second.items;
+		if (data.y < 45) {
+			data.y = 1;
+		} else {
+			data.y = 91;
+		}
 		tempArr[index].position = data;
 		// calculate the location in temrms of percentage
 		tempArr[index].location = Math.abs(
@@ -37,7 +54,8 @@ function App({ width, setZoom, duration, columns, setColumns, skipAhead }) {
 		let timeStamp =
 			(duration / width) * (data.x + tempArr[index].parentWidth + 3);
 		//jumping to that time stamp in audio
-		skipAhead(undefined, timeStamp);
+		// eslint-disable-next-line no-unused-expressions
+		clickToChange ? skipAhead(undefined, timeStamp) : undefined;
 		//updating the timeStamp
 		tempArr[index].timeStamp = timeStamp;
 		setColumns({
@@ -48,12 +66,15 @@ function App({ width, setZoom, duration, columns, setColumns, skipAhead }) {
 		console.log("duration", duration);
 		console.log("Data:", data.x + 3);
 		console.log("location:", tempArr[index].location);
+		console.log("position:", tempArr[index].position);
 
 		console.log("timeStamp", timeStamp);
 		// console.log("index", index);
 	};
+
 	// called as the word is draged from the wordbank to the
-	const onDragEnd = (result, columns, setColumns) => {
+	const onDragEnd = (result) => {
+		console.log("the result is ", result);
 		if (!result.destination) return;
 		const { source, destination } = result;
 		if (source.droppableId !== destination.droppableId) {
@@ -98,6 +119,7 @@ function App({ width, setZoom, duration, columns, setColumns, skipAhead }) {
 			});
 		}
 	};
+	//TODO place it in main
 	const handleExportData = () => {
 		let temp = columns.second.items;
 		let tempObj = {};
@@ -113,8 +135,8 @@ function App({ width, setZoom, duration, columns, setColumns, skipAhead }) {
 	};
 
 	return (
-		<div>
-			<div>
+		<div style={{ width: containerWidth }}>
+			{/* <div>
 				<button
 					onClick={() => {
 						handleExportData();
@@ -122,10 +144,8 @@ function App({ width, setZoom, duration, columns, setColumns, skipAhead }) {
 				>
 					Export Data
 				</button>
-			</div>
-			<DragDropContext
-				onDragEnd={(result) => onDragEnd(result, columns, setColumns)}
-			>
+			</div> */}
+			<DragDropContext onDragEnd={(result) => onDragEnd(result)}>
 				<div key={"first"}>
 					<Droppable droppableId={"first"} key={"first"} direction="horizontal">
 						{(provided, snapshot) => {
@@ -155,7 +175,9 @@ function App({ width, setZoom, duration, columns, setColumns, skipAhead }) {
 												{(provided, snapshot) => {
 													return (
 														<div
-															onMouseUp={() => console.log("bilal")}
+															onClick={() => {
+																moveWordFromTopToBottom(undefined, index);
+															}}
 															ref={provided.innerRef}
 															{...provided.draggableProps}
 															{...provided.dragHandleProps}
@@ -169,6 +191,7 @@ function App({ width, setZoom, duration, columns, setColumns, skipAhead }) {
 																backgroundColor: snapshot.isDragging
 																	? "#263B4A"
 																	: "#456C86",
+																fontSize: `${fontSize}px`,
 																color: "white",
 																...provided.draggableProps.style,
 															}}
@@ -215,6 +238,8 @@ function App({ width, setZoom, duration, columns, setColumns, skipAhead }) {
 										}}
 										style={{
 											display: "flex",
+											overflow: "hidden",
+											flexWrap: "wrap",
 											width: `${width}px`,
 											background: snapshot.isDraggingOver
 												? "rgb(69, 108, 134,0.2)"
@@ -222,7 +247,6 @@ function App({ width, setZoom, duration, columns, setColumns, skipAhead }) {
 											// minHeight: 50,
 											height: "300px",
 											// border: "2px solid blue",
-											flexWrap: "wrap",
 										}}
 									>
 										{Object.values(columns)[1]
@@ -249,32 +273,40 @@ function App({ width, setZoom, duration, columns, setColumns, skipAhead }) {
 													>
 														<div
 															style={{
-																height: "40%",
+																height: item.position.y < 40 ? "0px" : "40%",
 																// width: "50px",
+																// position:"absolute",
 																padding: "10px 0",
 																paddingTop: "0",
-																borderLeft: "2px solid green",
+																borderLeft:
+																	item.position.y < 40
+																		? "2px solid white"
+																		: "2px solid #28a745",
 															}}
 														>
 															<div
-																className="badge badge-success"
+																className={
+																	item.position.y < 40
+																		? "badge badge-dark"
+																		: "badge badge-success"
+																}
 																style={{
 																	padding: "5px",
-																	border: "2px solid green",
-																	borderLeft: "none",
-																	"&:hover": {
-																		background: "#efefef",
-																	},
+																	fontWeight: "normal",
+																	fontSize: `${fontSize}px`,
+																	borderRadius: "0px",
+																	color: "white",
+																	borderLeft: "0px",
 																}}
 																onDoubleClick={() => setZoom("in")}
 																onContextMenu={(e) => {
 																	e.preventDefault();
 																	setZoom("out");
 																}}
-														
 															>
 																{item.word}
 															</div>
+															<div>{item.id}</div>
 														</div>
 													</Draggable2>
 												);

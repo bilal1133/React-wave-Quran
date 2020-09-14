@@ -18,7 +18,7 @@ function App() {
 	for (let index = 0; index < words.length; index++) {
 		ayaWord[index] = {
 			id: `${words.length - index }`,
-			position: { x: -3, y: -5 },
+			position: { x: -3, y: 1 },
 			timeStamp: 0,
 			location: 1,
 			parentWidth: 0,
@@ -30,7 +30,6 @@ function App() {
 
 	return (
 		<div className="App">
-			<h1>Billy is Awsome</h1>
 			<Main ayaWord={ayaWord} audio={audio} />
 		</div>
 	);

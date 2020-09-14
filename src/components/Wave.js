@@ -10,6 +10,7 @@ export default ({
 	setWavesurfer,
 	position,
 	volume,
+	audioRate
 }) => {
 	useEffect(() => {
 		document.querySelector(".styles_reactWaves__1M36F").style.padding = " 0px ";
@@ -31,7 +32,6 @@ export default ({
 			left = 0;
 
 		let draggingFunction = (e) => {
-			console.log("Mouse moved", el.scrollLeft);
 			// el.scrollLeft += 10;
 			document.addEventListener("mouseup", (e) => {
 				e.preventDefault();
@@ -42,7 +42,6 @@ export default ({
 		};
 
 		el.addEventListener("mousedown", (e) => {
-			console.log("Handling mousedown");
 			e.preventDefault();
 
 			x = e.pageX;
@@ -53,7 +52,6 @@ export default ({
 	}, []);
 
 	const onLoading = ({ wavesurfer, originalArgs = [] }) => {
-		console.log(wavesurfer);
 		setWavesurfer(wavesurfer);
 	};
 
@@ -91,6 +89,8 @@ export default ({
 		return 4;
 	}
 
+
+	
 	function defaultSecondaryLabelInterval(pxPerSec) {
 		if (pxPerSec >= 25) {
 			return 5;
@@ -136,6 +136,7 @@ export default ({
 					autoCenterImmediately: false,
 					dragSelection: false,
 					scrollParent: false,
+					audioRate:audioRate
 				}}
 				volume={volume}
 				zoom={zoom}
