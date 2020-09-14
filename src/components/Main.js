@@ -232,24 +232,20 @@ export default function Main({ ayaWord, audio }) {
 		}
 	};
 	// Align the not used words based on the scroll
-	// can also be used to remove not used words
-	const alignNotUsedWords = (remove) => {
+	const alignNotUsedWords = () => {
 		let tempArr = columns.second.items;
-		// TODO
-		// if (remove) {
-		// 	for (let index = 0; index < tempArr.length; index++) {
-		// 		if (tempArr[index].position.y < 40) {
-		// 			tempArr[index].position.x = el;
-		// 		}
-		// 	}
-		// }
 
 		let el = document.getElementById("dnd-container").scrollLeft;
-
+		// TODO
+		// console.log("THE EL is",el);
+		// if (el >= (width-100)) {
+		// 	el = el - tempArr[tempArr[tempArr.length - 1].parentWidth];
+		// 	console.log("HHHHHHHHHHHHHHHHUUUUUUUUU", el);
+		// }
 		for (let index = 0; index < tempArr.length; index++) {
 			if (tempArr[index].position.y < 40) {
-				
 				tempArr[index].position.x = el;
+				//!  tempArr[index].position.y = 45;
 			}
 		}
 		setColumns({
@@ -291,7 +287,7 @@ export default function Main({ ayaWord, audio }) {
 	};
 	/// increase or decrease the font
 	const handleFontSize = (value) => {
-		if (value === "inc" && fontSize < 20) {
+		if (value === "inc" && fontSize < 16) {
 			setFontSize(fontSize + 2);
 		} else if (value === "dec" && fontSize > 12) {
 			setFontSize(fontSize - 2);
@@ -314,32 +310,48 @@ export default function Main({ ayaWord, audio }) {
 					tempArr[index].location = Math.abs(
 						((tempPosition + tempArr[index].parentWidth) / width) * 100
 					);
+					// * Calculating the timeStamp
+					let timeStamp =
+						(duration / width) *
+						(tempPosition + tempArr[index].parentWidth + 3);
+					//* updating the timeStamp
+					tempArr[index].timeStamp = timeStamp;
 
 					setColumns({
 						...columns,
-
 						second: {
 							...columns.second,
 							items: tempArr,
 						},
 					});
-					// alert(`${width} - ${position} - ${duration} - ${tempPosition} - `);
 				}
-
-				// tempArr[index].location = Math.abs(
-				// 	((data.x + tempArr[index].parentWidth) / width) * 100
-				// );
 
 				break;
 			}
 		}
 	};
+	//* To export the data
+	const handleExportData = () => {
+		let temp = columns.second.items;
+		let tempObj = {};
+		temp.forEach((element) => {
+			tempObj[element.id] = {
+				word: element.word,
+				timeStamp: element.timeStamp,
+				Wordnumber: element.id,
+				location: element.location,
+			};
+		});
+		console.log(tempObj);
+	};
+
 	return (
 		<div>
 			<div
 				style={{
 					marginTop: "15px",
 				}}
+				className={"container-sm"}
 			>
 				<div
 					style={{
@@ -347,7 +359,7 @@ export default function Main({ ayaWord, audio }) {
 						// bottom: "0px",
 						left: "1.2rem",
 						zIndex: 500,
-						maxWidth: "90%",
+						// maxWidth: "90%",
 						margin: "auto",
 					}}
 				>
@@ -371,7 +383,7 @@ export default function Main({ ayaWord, audio }) {
 						left: "1.2rem",
 						margin: "auto",
 						marginBottom: "-125px",
-						maxWidth: "90%",
+						// maxWidth: "90%",
 					}}
 				>
 					<Wave
@@ -417,8 +429,15 @@ export default function Main({ ayaWord, audio }) {
 					clickToChange={clickToChange}
 					setClickToChange={setClickToChange}
 				/>
-
-				<KeyboardhotKeys />
+				<div className="container-sm d-flex justify-content-between">
+					<KeyboardhotKeys />
+					<button
+						className="btn btn-outline-info "
+						onClick={() => handleExportData()}
+					>
+						Export Data
+					</button>
+				</div>
 			</div>
 		</div>
 	);

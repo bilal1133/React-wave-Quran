@@ -30,6 +30,12 @@ export default function WaveControlls({
 		if (e.keyCode === 39) {
 			skipAhead("frwd");
 		}
+		if (e.keyCode === 221) {
+			handleAudioRate("inc");
+		}
+		if (e.keyCode === 219) {
+			handleAudioRate("dec");
+		}
 	};
 	document.onkeyup = function (e) {
 		var e = e || window.event; // for IE to cover IEs window event-object
@@ -73,12 +79,7 @@ export default function WaveControlls({
 		if (e.keyCode === 57 || e.keyCode === 105) {
 			moveWordFromTopToBottom(9, undefined);
 		}
-		if (e.keyCode === 221) {
-			handleAudioRate("inc");
-		}
-		if (e.keyCode === 219) {
-			handleAudioRate("dec");
-		}
+		
 		if (e.keyCode === 87) {
 			alignNotUsedWords();
 		}
@@ -87,9 +88,9 @@ export default function WaveControlls({
 		}
 	};
 	return (
-		<div className="container-sm d-flex justify-content-between my-2 flex-wrap">
+		<div className="container-sm d-flex justify-content-around my-2 flex-wrap">
 			<button
-				className="btn btn-primary"
+				className="my-2 btn btn-primary"
 				onClick={() => {
 					setPlaying(!playing);
 				}}
@@ -98,7 +99,7 @@ export default function WaveControlls({
 			</button>
 
 			<button
-				className="btn btn-secondary"
+				className="btn my-2 btn-secondary"
 				onClick={() => {
 					handleZoom("in");
 				}}
@@ -108,7 +109,7 @@ export default function WaveControlls({
 			</button>
 
 			<button
-				className="btn btn-secondary"
+				className="btn my-2 btn-secondary"
 				onClick={() => {
 					handleZoom("out");
 				}}
@@ -116,14 +117,14 @@ export default function WaveControlls({
 				{" "}
 				{"➖️"}{" "}
 			</button>
-			<button className="btn btn-primary" onClick={() => skipAhead("bkwrd")}>
+			<button className="btn my-2 btn-primary" onClick={() => skipAhead("bkwrd")}>
 				{"⏪"}
 			</button>
-			<button className="btn btn-primary" onClick={() => skipAhead("frwd")}>
+			<button className="btn my-2 btn-primary" onClick={() => skipAhead("frwd")}>
 				{"⏩"}
 			</button>
 			<button
-				className={"btn btn-success"}
+				className={"my-2 btn btn-success"}
 				onClick={() => {
 					alignNotUsedWords();
 					// moveWordFromTopToBottom(5);
@@ -133,7 +134,7 @@ export default function WaveControlls({
 				{"Allighn"}{" "}
 			</button>
 			<button
-				className={"btn btn-info"}
+				className={"my-2 btn btn-info"}
 				onClick={() => {
 					moveWordFromTopToBottom(5);
 				}}
@@ -142,7 +143,7 @@ export default function WaveControlls({
 				{"Drag 5"}{" "}
 			</button>
 			<button
-				className={"btn btn-info"}
+				className={"my-2 btn btn-info"}
 				onClick={() => {
 					jumpToNextWord();
 				}}
@@ -152,7 +153,7 @@ export default function WaveControlls({
 			</button>
 
 			<button
-				className={"btn btn-info"}
+				className={"my-2 btn btn-info"}
 				onClick={() => {
 					jumpToPreviousWord();
 				}}
@@ -161,7 +162,7 @@ export default function WaveControlls({
 				{"Previous"}{" "}
 			</button>
 			<button
-				className={"btn btn-info"}
+				className={"my-2 btn btn-info"}
 				onClick={() => {
 					handleAudioRate("inc");
 				}}
@@ -170,7 +171,7 @@ export default function WaveControlls({
 				{"Speed ⚡"}{" "}
 			</button>
 			<button
-				className={"btn btn-info"}
+				className={"my-2 btn btn-info"}
 				onClick={() => {
 					handleAudioRate("dec");
 				}}
@@ -179,7 +180,7 @@ export default function WaveControlls({
 				{"Speed 🐌"}{" "}
 			</button>
 			<button
-				className={"btn btn-info"}
+				className={"my-2 btn btn-info"}
 				onClick={() => {
 					handleFontSize("inc");
 				}}
@@ -188,7 +189,7 @@ export default function WaveControlls({
 				{"Font ++"}{" "}
 			</button>
 			<button
-				className={"btn btn-info"}
+				className={"my-2 btn btn-info"}
 				onClick={() => {
 					handleFontSize("dec");
 				}}
@@ -197,16 +198,16 @@ export default function WaveControlls({
 				{"Font --"}{" "}
 			</button>
 			<button
-				className={loop ? "btn btn-danger" : "btn btn-info"}
+				className={loop ? "my-2 btn btn-danger" : "my-2 btn btn-info"}
 				onClick={() => {
 					loopCurrentSegment();
 				}}
 			>
 				{" "}
-				{"Loop ➰"}{" "}
+				{"Loop➰"}{" "}
 			</button>
 			<button
-				className={"btn btn-warning"}
+				className={"my-2 btn btn-warning"}
 				onClick={() => {
 					handleKeyboardMap();
 				}}
@@ -214,14 +215,14 @@ export default function WaveControlls({
 				{" "}
 				{"Map Next 🗺"}{" "}
 			</button>
-			<Form.Group className={"badge badge-primary p-2"}>
+			<div className={"my-2 button button-outline-primary p-2"}>
 				<Form.Check
 					type={"checkbox"}
 					label="Click Word to Move Audio"
 					checked={clickToChange}
 					onChange={() => setClickToChange(!clickToChange)}
 				/>
-			</Form.Group>
+			</div>
 		</div>
 	);
 }

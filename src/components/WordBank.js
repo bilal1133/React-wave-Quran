@@ -119,32 +119,10 @@ function App({
 			});
 		}
 	};
-	//TODO place it in main
-	const handleExportData = () => {
-		let temp = columns.second.items;
-		let tempObj = {};
-		temp.forEach((element) => {
-			tempObj[element.id] = {
-				word: element.word,
-				timeStamp: element.timeStamp,
-				Wordnumber: element.id,
-				location: element.location,
-			};
-		});
-		console.log(tempObj);
-	};
 
 	return (
-		<div style={{ width: containerWidth }}>
-			{/* <div>
-				<button
-					onClick={() => {
-						handleExportData();
-					}}
-				>
-					Export Data
-				</button>
-			</div> */}
+		<div style={{ width: containerWidth }} >
+		
 			<DragDropContext onDragEnd={(result) => onDragEnd(result)}>
 				<div key={"first"}>
 					<Droppable droppableId={"first"} key={"first"} direction="horizontal">
@@ -174,7 +152,7 @@ function App({
 											>
 												{(provided, snapshot) => {
 													return (
-														<div
+														<div 
 															onClick={() => {
 																moveWordFromTopToBottom(undefined, index);
 															}}
@@ -246,6 +224,7 @@ function App({
 												: "rgb(69, 108, 134,0.1)",
 											// minHeight: 50,
 											height: "300px",
+											
 											// border: "2px solid blue",
 										}}
 									>
@@ -273,6 +252,7 @@ function App({
 													>
 														<div
 															style={{
+																// marginLeft: item.position.y < 40 ?  `${"-20px"}` : "0px",
 																height: item.position.y < 40 ? "0px" : "40%",
 																// width: "50px",
 																// position:"absolute",
