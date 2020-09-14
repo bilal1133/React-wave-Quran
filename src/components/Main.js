@@ -34,6 +34,17 @@ export default function Main({ ayaWord, audio }) {
 
 	const [columns, setColumns] = useState(dnd_columns);
 	useEffect(() => {
+		let tempAudio = document.querySelector("audio");
+		tempAudio.addEventListener(
+			"timeupdate",
+			function (e) {
+				var currentTimeMs = tempAudio.currentTime;
+				setPosition(currentTimeMs);
+			},
+			false
+		);
+	}, []);
+	useEffect(() => {
 		handleSetWidth();
 	}, [zoom]);
 	useEffect(() => {
@@ -63,8 +74,6 @@ export default function Main({ ayaWord, audio }) {
 			}
 		}
 		setLoopEnding(jumpTime);
-		// console.log("jumpTime", jumpTime);
-		// setLoop(!loop);
 	};
 
 	const handleSetWidth = () => {
@@ -92,10 +101,11 @@ export default function Main({ ayaWord, audio }) {
 	const onPosChange = (pos, wavesurf) => {
 		if (pos !== position) {
 			wavesurf && setWavesurfer(wavesurfer);
-			if (pos < 1) {
-				setPosition(duration * pos);
-				return;
-			}
+			//!
+			// if (pos < 1) {
+			// 	setPosition(duration * pos);
+			// 	return;
+			// }
 			setPosition(pos);
 		}
 	};
@@ -107,7 +117,7 @@ export default function Main({ ayaWord, audio }) {
 	// to move with in Audio based on the direction frwd/bkwrd or exact time stamp
 	// (direction{'frwd'/'bkwrd'} , location/timestamp)
 	const skipAhead = (direction, location) => {
-		let amount = ((duration / zoom) * 3) / 100;
+		let amount = ((duration / zoom) * 4) / 90;
 		if (location && location !== position) {
 			wavesurfer.seekTo(secondsToPosition(location));
 			onPosChange(location, wavesurfer);
@@ -136,10 +146,9 @@ export default function Main({ ayaWord, audio }) {
 	//  jump to the next or the previous word in terms of audio
 	const jumpToNextWord = () => {
 		let jumpTime = duration;
-
 		for (let index = 0; index < columns.second.items.length; index++) {
 			let temp = columns.second.items[index].timeStamp;
-			if (temp > position) {
+			if (temp > position + 0.01) {
 				if (temp < jumpTime) {
 					jumpTime = temp;
 					continue;
@@ -150,7 +159,7 @@ export default function Main({ ayaWord, audio }) {
 	};
 	// to jump to the next or the previous word in terms of audio
 	const jumpToPreviousWord = () => {
-		let jumpTime = 0.1;
+		let jumpTime = 0.01;
 		// finding the next timeStamp closest to the current Position
 		for (let index = 0; index < columns.second.items.length; index++) {
 			let temp = columns.second.items[index].timeStamp;
@@ -180,7 +189,7 @@ export default function Main({ ayaWord, audio }) {
 			const destItems = columns.second.items;
 			const [removed] = sourceItems.splice(index, 1);
 			let el = document.getElementById("dnd-container").scrollLeft;
-			removed.position.x = el + 3;
+			removed.position.x = el;
 			removed.parentWidth = temp;
 			// destItems.push(removed);
 			destItems.splice(0, 0, removed);
@@ -213,7 +222,7 @@ export default function Main({ ayaWord, audio }) {
 			const destItems = columns.second.items;
 			const removed = sourceItems.pop();
 			let el = document.getElementById("dnd-container").scrollLeft;
-			removed.position.x = el + 3;
+			removed.position.x = el;
 			removed.parentWidth = temp;
 			// destItems.splice(destination.i, 0, removed);
 			// destItems.push(removed);
@@ -231,17 +240,18 @@ export default function Main({ ayaWord, audio }) {
 			});
 		}
 	};
-	// Align the not used words based on the scroll
+	//* Align the not used words based on the scroll
 	const alignNotUsedWords = () => {
 		let tempArr = columns.second.items;
 
 		let el = document.getElementById("dnd-container").scrollLeft;
+		let max = document.getElementById("dnd-container").scrollLeftMax;
 		// TODO
-		// console.log("THE EL is",el);
-		// if (el >= (width-100)) {
-		// 	el = el - tempArr[tempArr[tempArr.length - 1].parentWidth];
-		// 	console.log("HHHHHHHHHHHHHHHHUUUUUUUUU", el);
-		// }
+		console.log("THE EL is", el + "Width ", width);
+
+		if (el + max >= 500) {
+			el = el - tempArr[0].parentWidth;
+		}
 		for (let index = 0; index < tempArr.length; index++) {
 			if (tempArr[index].position.y < 40) {
 				tempArr[index].position.x = el;
@@ -278,10 +288,14 @@ export default function Main({ ayaWord, audio }) {
 	};
 
 	/// increase or decrease the speed of the audio
-	const handleAudioRate = (value) => {
-		if (value === "inc" && audioRate < 4) {
+	const handleAudioRate = (position, value) => {
+		if (value) {
+			setAudioRate(value);
+			return;
+		}
+		if (position === "inc" && audioRate < 4) {
 			setAudioRate(audioRate + 0.1);
-		} else if (value === "dec" && audioRate > 0.2) {
+		} else if (position === "dec" && audioRate > 0.2) {
 			setAudioRate(audioRate - 0.1);
 		}
 	};
@@ -300,31 +314,29 @@ export default function Main({ ayaWord, audio }) {
 		// finding the first word based on its y position
 		for (let index = tempArr.length - 1; index >= 0; index--) {
 			if (tempArr[index].position.y < 40) {
-				if (position > 1) {
-					let tempPosition =
-						(width / duration) * position - tempArr[index].parentWidth;
-					tempArr[index].position.x = tempPosition;
-					tempArr[index].position.y = 91;
+				let tempPosition =
+					(width / duration) * position - tempArr[index].parentWidth;
+				//* Adding 2.8 to allign the position with audio
+				tempArr[index].position.x = tempPosition - 3;
+				tempArr[index].position.y = 91;
 
-					// calculate the location in temrms of percentage
-					tempArr[index].location = Math.abs(
-						((tempPosition + tempArr[index].parentWidth) / width) * 100
-					);
-					// * Calculating the timeStamp
-					let timeStamp =
-						(duration / width) *
-						(tempPosition + tempArr[index].parentWidth + 3);
-					//* updating the timeStamp
-					tempArr[index].timeStamp = timeStamp;
+				//* calculate the location in temrm of percentage
+				tempArr[index].location = Math.abs(
+					((tempPosition + tempArr[index].parentWidth) / width) * 100
+				);
+				// * Calculating the timeStamp
+				let timeStamp =
+					(duration / width) * (tempPosition + tempArr[index].parentWidth);
+				//* updating the timeStamp
+				tempArr[index].timeStamp = timeStamp;
 
-					setColumns({
-						...columns,
-						second: {
-							...columns.second,
-							items: tempArr,
-						},
-					});
-				}
+				setColumns({
+					...columns,
+					second: {
+						...columns.second,
+						items: tempArr,
+					},
+				});
 
 				break;
 			}
@@ -357,7 +369,7 @@ export default function Main({ ayaWord, audio }) {
 					style={{
 						position: "relative",
 						// bottom: "0px",
-						left: "1.2rem",
+						left: "1.25rem",
 						zIndex: 500,
 						// maxWidth: "90%",
 						margin: "auto",
@@ -380,7 +392,7 @@ export default function Main({ ayaWord, audio }) {
 					style={{
 						position: "relative",
 						bottom: "130px",
-						left: "1.2rem",
+						left: "1.25rem",
 						margin: "auto",
 						marginBottom: "-125px",
 						// maxWidth: "90%",

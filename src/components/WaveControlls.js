@@ -1,7 +1,7 @@
 /** @format */
 
 import React, { useEffect } from "react";
-import { Form, Col } from "react-bootstrap";
+import { Form, OverlayTrigger, Tooltip } from "react-bootstrap";
 export default function WaveControlls({
 	handleZoom,
 	setPlaying,
@@ -79,146 +79,347 @@ export default function WaveControlls({
 		if (e.keyCode === 57 || e.keyCode === 105) {
 			moveWordFromTopToBottom(9, undefined);
 		}
-		
+
 		if (e.keyCode === 87) {
 			alignNotUsedWords();
 		}
 		if (e.keyCode === 82) {
 			loopCurrentSegment();
 		}
+		if (e.keyCode === 96 || e.keyCode === 48) {
+			handleAudioRate(undefined, 1);
+		}
 	};
 	return (
 		<div className="container-sm d-flex justify-content-around my-2 flex-wrap">
-			<button
-				className="my-2 btn btn-primary"
-				onClick={() => {
-					setPlaying(!playing);
-				}}
+			<OverlayTrigger
+				placement="bottom"
+				overlay={
+					<Tooltip id="button-tooltip-2">
+						Play / Pause <b />
+						<p>
+							{" "}
+							<strong>A / SpaceBar</strong>
+						</p>
+					</Tooltip>
+				}
 			>
-				{!playing ? "▶️" : "⏹"}
-			</button>
+				<button
+					className="my-2 btn btn-primary"
+					onClick={() => {
+						setPlaying(!playing);
+					}}
+				>
+					{!playing ? "▶️" : "⏹"}
+				</button>
+			</OverlayTrigger>
+			<OverlayTrigger
+				placement="bottom"
+				overlay={
+					<Tooltip id="button-tooltip-2">
+						Zoom In <b />
+						<p>
+							{" "}
+							<strong> +</strong>
+						</p>
+					</Tooltip>
+				}
+			>
+				<button
+					className="btn my-2 btn-secondary"
+					onClick={() => {
+						handleZoom("in");
+					}}
+				>
+					{" "}
+					{"➕️"}{" "}
+				</button>
+			</OverlayTrigger>
+			<OverlayTrigger
+				placement="bottom"
+				overlay={
+					<Tooltip id="button-tooltip-2">
+						Zoom Out <b />
+						<p>
+							{" "}
+							<strong> - </strong>
+						</p>
+					</Tooltip>
+				}
+			>
+				<button
+					className="btn my-2 btn-secondary"
+					onClick={() => {
+						handleZoom("out");
+					}}
+				>
+					{" "}
+					{"➖️"}{" "}
+				</button>
+			</OverlayTrigger>
+			<OverlayTrigger
+				placement="bottom"
+				overlay={
+					<Tooltip id="button-tooltip-2">
+						Skip Backword <b />
+						<p>
+							{" "}
+							<strong> ⬅ </strong>
+						</p>
+					</Tooltip>
+				}
+			>
+				<button
+					className="btn my-2 btn-primary"
+					onClick={() => skipAhead("bkwrd")}
+				>
+					{"⏪"}
+				</button>
+			</OverlayTrigger>
+			<OverlayTrigger
+				placement="bottom"
+				overlay={
+					<Tooltip id="button-tooltip-2">
+						Skip Forward
+						<b />
+						<p>
+							{" "}
+							<strong>➡</strong>
+						</p>
+					</Tooltip>
+				}
+			>
+				<button
+					className="btn my-2 btn-primary"
+					onClick={() => skipAhead("frwd")}
+				>
+					{"⏩"}
+				</button>
+			</OverlayTrigger>
+			<OverlayTrigger
+				placement="bottom"
+				overlay={
+					<Tooltip id="button-tooltip-2">
+						Allign Not Used Words <b />
+						<p>
+							{" "}
+							<strong>W</strong>
+						</p>
+					</Tooltip>
+				}
+			>
+				<button
+					className={"my-2 btn btn-success"}
+					onClick={() => {
+						alignNotUsedWords();
+					}}
+				>
+					{" "}
+					{"Allighn"}{" "}
+				</button>
+			</OverlayTrigger>
+			<OverlayTrigger
+				placement="bottom"
+				overlay={
+					<Tooltip id="button-tooltip-2">
+						Drag 5 Words
+						<b />
+						<p>
+							{" "}
+							<strong> 5 </strong>
+						</p>
+					</Tooltip>
+				}
+			>
+				<button
+					className={"my-2 btn btn-info"}
+					onClick={() => {
+						moveWordFromTopToBottom(5);
+					}}
+				>
+					{" "}
+					{"Drag 5"}{" "}
+				</button>
+			</OverlayTrigger>
+			<OverlayTrigger
+				placement="bottom"
+				overlay={
+					<Tooltip id="button-tooltip-2">
+						Jump To next Word <b />
+						<p>
+							{" "}
+							<strong>N / O</strong>
+						</p>
+					</Tooltip>
+				}
+			>
+				<button
+					className={"my-2 btn btn-info"}
+					onClick={() => {
+						jumpToNextWord();
+					}}
+				>
+					{" "}
+					{"next"}{" "}
+				</button>
+			</OverlayTrigger>
 
-			<button
-				className="btn my-2 btn-secondary"
-				onClick={() => {
-					handleZoom("in");
-				}}
+			<OverlayTrigger
+				placement="bottom"
+				overlay={
+					<Tooltip id="button-tooltip-2">
+						Jump to Previous Word <b />
+						<p>
+							{" "}
+							<strong>P</strong>
+						</p>
+					</Tooltip>
+				}
 			>
-				{" "}
-				{"➕️"}{" "}
-			</button>
+				<button
+					className={"my-2 btn btn-info"}
+					onClick={() => {
+						jumpToPreviousWord();
+					}}
+				>
+					{" "}
+					{"Previous"}{" "}
+				</button>
+			</OverlayTrigger>
 
-			<button
-				className="btn my-2 btn-secondary"
-				onClick={() => {
-					handleZoom("out");
-				}}
+			<OverlayTrigger
+				placement="bottom"
+				overlay={
+					<Tooltip id="button-tooltip-2">
+						Decrease Speed By 0.10 <b />
+						<p>
+							{" "}
+							<strong>{"["}</strong>
+						</p>
+					</Tooltip>
+				}
 			>
-				{" "}
-				{"➖️"}{" "}
-			</button>
-			<button className="btn my-2 btn-primary" onClick={() => skipAhead("bkwrd")}>
-				{"⏪"}
-			</button>
-			<button className="btn my-2 btn-primary" onClick={() => skipAhead("frwd")}>
-				{"⏩"}
-			</button>
-			<button
-				className={"my-2 btn btn-success"}
-				onClick={() => {
-					alignNotUsedWords();
-					// moveWordFromTopToBottom(5);
-				}}
+				<button
+					className={"my-2 btn btn-info"}
+					onClick={() => {
+						handleAudioRate("dec");
+					}}
+				>
+					{" "}
+					{"Slower 🐌"}{" "}
+				</button>
+			</OverlayTrigger>
+			<OverlayTrigger
+				placement="bottom"
+				overlay={
+					<Tooltip id="button-tooltip-2">
+						Increase Speed By 0.10
+						<b />
+						<p>
+							{" "}
+							<strong>{"]"}</strong>
+						</p>
+					</Tooltip>
+				}
 			>
-				{" "}
-				{"Allighn"}{" "}
-			</button>
-			<button
-				className={"my-2 btn btn-info"}
-				onClick={() => {
-					moveWordFromTopToBottom(5);
-				}}
+				<button
+					className={"my-2 btn btn-info"}
+					onClick={() => {
+						handleAudioRate("inc");
+					}}
+				>
+					{" "}
+					{"Faster ⚡"}{" "}
+				</button>
+			</OverlayTrigger>
+			<OverlayTrigger
+				placement="bottom"
+				overlay={
+					<Tooltip id="button-tooltip-2">
+						Increase Font <b />
+						<p> {/* <strong>A / SpaceBar</strong> */}</p>
+					</Tooltip>
+				}
 			>
-				{" "}
-				{"Drag 5"}{" "}
-			</button>
-			<button
-				className={"my-2 btn btn-info"}
-				onClick={() => {
-					jumpToNextWord();
-				}}
+				<button
+					className={"my-2 btn btn-info"}
+					onClick={() => {
+						handleFontSize("inc");
+					}}
+				>
+					{" "}
+					{"Font ++"}{" "}
+				</button>
+			</OverlayTrigger>
+			<OverlayTrigger
+				placement="bottom"
+				overlay={
+					<Tooltip id="button-tooltip-2">
+						Decrease Font
+						<b />
+						<p> {/* <strong>A / SpaceBar</strong> */}</p>
+					</Tooltip>
+				}
 			>
-				{" "}
-				{"next"}{" "}
-			</button>
-
-			<button
-				className={"my-2 btn btn-info"}
-				onClick={() => {
-					jumpToPreviousWord();
-				}}
+				<button
+					className={"my-2 btn btn-info"}
+					onClick={() => {
+						handleFontSize("dec");
+					}}
+				>
+					{" "}
+					{"Font --"}{" "}
+				</button>
+			</OverlayTrigger>
+			<OverlayTrigger
+				placement="bottom"
+				overlay={
+					<Tooltip id="button-tooltip-2">
+						Loop Specific Section <b />
+						<p>
+							{" "}
+							<strong>R</strong>
+						</p>
+					</Tooltip>
+				}
 			>
-				{" "}
-				{"Previous"}{" "}
-			</button>
-			<button
-				className={"my-2 btn btn-info"}
-				onClick={() => {
-					handleAudioRate("inc");
-				}}
+				<button
+					className={loop ? "my-2 btn btn-danger" : "my-2 btn btn-info"}
+					onClick={() => {
+						loopCurrentSegment();
+					}}
+				>
+					{" "}
+					{"Loop➰"}{" "}
+				</button>
+			</OverlayTrigger>
+			<OverlayTrigger
+				placement="bottom"
+				overlay={
+					<Tooltip id="button-tooltip-2">
+						Place Flag onto Audio
+						<b />
+						<p>
+							{" "}
+							<strong>Q</strong>
+						</p>
+					</Tooltip>
+				}
 			>
-				{" "}
-				{"Speed ⚡"}{" "}
-			</button>
-			<button
-				className={"my-2 btn btn-info"}
-				onClick={() => {
-					handleAudioRate("dec");
-				}}
-			>
-				{" "}
-				{"Speed 🐌"}{" "}
-			</button>
-			<button
-				className={"my-2 btn btn-info"}
-				onClick={() => {
-					handleFontSize("inc");
-				}}
-			>
-				{" "}
-				{"Font ++"}{" "}
-			</button>
-			<button
-				className={"my-2 btn btn-info"}
-				onClick={() => {
-					handleFontSize("dec");
-				}}
-			>
-				{" "}
-				{"Font --"}{" "}
-			</button>
-			<button
-				className={loop ? "my-2 btn btn-danger" : "my-2 btn btn-info"}
-				onClick={() => {
-					loopCurrentSegment();
-				}}
-			>
-				{" "}
-				{"Loop➰"}{" "}
-			</button>
-			<button
-				className={"my-2 btn btn-warning"}
-				onClick={() => {
-					handleKeyboardMap();
-				}}
-			>
-				{" "}
-				{"Map Next 🗺"}{" "}
-			</button>
+				<button
+					className={"my-2 btn btn-warning"}
+					onClick={() => {
+						handleKeyboardMap();
+					}}
+				>
+					{" "}
+					{"Place Flag"}{" "}
+				</button>
+			</OverlayTrigger>
 			<div className={"my-2 button button-outline-primary p-2"}>
 				<Form.Check
 					type={"checkbox"}
-					label="Click Word to Move Audio"
+					label="Automatically Snap to Audio"
 					checked={clickToChange}
 					onChange={() => setClickToChange(!clickToChange)}
 				/>

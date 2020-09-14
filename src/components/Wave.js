@@ -5,7 +5,7 @@ export default ({
 	audio,
 	zoom,
 	playing,
-	onPosChange,
+	// onPosChange,
 	onWaveformReady,
 	setWavesurfer,
 	position,
@@ -142,7 +142,7 @@ export default ({
 				zoom={zoom}
 				pos={position}
 				playing={playing}
-				onPosChange={onPosChange}
+				// onPosChange={onPosChange}
 				onLoading={onLoading}
 				onWaveformReady={onWaveformReady}
 				timelineOptions={{

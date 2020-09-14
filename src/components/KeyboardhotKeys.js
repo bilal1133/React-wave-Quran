@@ -1,7 +1,7 @@
 /** @format */
 
 import React, { useState } from "react";
-import { Button, Modal } from "react-bootstrap";
+import { Button, Modal,OverlayTrigger,Tooltip } from "react-bootstrap";
 
 export default function KeyboardhotKeys() {
 	const [show, setShow] = useState(false);
@@ -14,10 +14,19 @@ export default function KeyboardhotKeys() {
 			// style={{ maxWidth: "720px" }}
 		>
 			<>
-				<Button variant="primary" onClick={handleShow}>
-					Hot Keys
-				</Button>
-
+				<OverlayTrigger
+					placement="top"
+					overlay={
+						<Tooltip id="button-tooltip-2">
+							View All Hot Keys
+							<b />
+						</Tooltip>
+					}
+				>
+					<Button variant="primary" onClick={handleShow}>
+						Hot Keys
+					</Button>
+				</OverlayTrigger>
 				<Modal show={show} onHide={handleClose}>
 					<Modal.Header closeButton>
 						<Modal.Title>Hot Keys</Modal.Title>
@@ -62,8 +71,6 @@ export default function KeyboardhotKeys() {
 									<td>zoom Out</td>
 									<td> {"-"} </td>
 								</tr>
-
-								
 
 								<tr>
 									<td colspan="2" class="table-active text-center">
