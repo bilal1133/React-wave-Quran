@@ -7,7 +7,33 @@ import Wave from "./Wave";
 import WaveControlls from "./WaveControlls";
 import KeyboardhotKeys from "./KeyboardhotKeys";
 import StateInfo from "./StateInfo";
+
+import { createUseStyles } from "react-jss";
+
+const useStyles = createUseStyles({
+	waveSuperContainer: {
+		position: "relative",
+		bottom: "130px",
+		left: "1.25rem",
+		marginBottom: "-125px",
+		width: "100%",
+		"&:hover": {
+			cursor: "-webkit-grab",
+			cursor: " grab",
+		},
+		"&:active": {
+			cursor: "-webkit-grabbing",
+			cursor: "grabbing",
+		},
+	},
+	fontSizeLg: {
+		fontSize: "14px",
+	},
+});
+
 export default function Main({ ayaWord, audio }) {
+	const classes = useStyles();
+
 	let [zoom, setZoom] = useState(1);
 	let [width, setWidth] = useState(1);
 	let [duration, setDuration] = useState(0);
@@ -20,6 +46,7 @@ export default function Main({ ayaWord, audio }) {
 	let [clickToChange, setClickToChange] = useState(true);
 	let [loop, setLoop] = useState(false);
 	let [loopEnding, setLoopEnding] = useState(0);
+	let [loopStartT, setLoopStartT] = useState(0);
 	// two containers for drag and drop
 	const dnd_columns = {
 		first: {
@@ -33,6 +60,7 @@ export default function Main({ ayaWord, audio }) {
 	};
 
 	const [columns, setColumns] = useState(dnd_columns);
+	// * Calculate the position of the audio
 	useEffect(() => {
 		let tempAudio = document.querySelector("audio");
 		tempAudio.addEventListener(
@@ -44,12 +72,30 @@ export default function Main({ ayaWord, audio }) {
 			false
 		);
 	}, []);
+
+	// * Checking if the user Resize the window then adjust the transparent box
+	// * and the also resizt the audio by zooming in and out
+	function resizedw() {
+		// Haven't resized in 100ms!
+		handleZoom("in");
+		handleZoom("out");
+	}
+	var doit;
+	window.onresize = function () {
+		clearTimeout(doit);
+		doit = setTimeout(resizedw, 100);
+	};
+
+	// * Set the new width fot the transparent box as the user zoom in/out
 	useEffect(() => {
 		handleSetWidth();
 	}, [zoom]);
+
+	// *  for the section loop functionality
 	useEffect(() => {
 		if (position >= loopEnding && loop === true) {
-			jumpToPreviousWord();
+			// jumpToPreviousWord();
+			skipAhead(undefined, loopStartT);
 		}
 	}, [loop, position]);
 
@@ -59,11 +105,8 @@ export default function Main({ ayaWord, audio }) {
 			setLoop(false);
 			return;
 		}
-		jumpToPreviousWord();
-		setPlaying(true);
-		setLoop(true);
 		let jumpTime = duration;
-
+		// * calculating the loop ending time
 		for (let index = 0; index < columns.second.items.length; index++) {
 			let temp = columns.second.items[index].timeStamp;
 			if (temp > position) {
@@ -74,8 +117,23 @@ export default function Main({ ayaWord, audio }) {
 			}
 		}
 		setLoopEnding(jumpTime);
-	};
+		// * calculating the loop ending time
+		jumpTime = 0.1;
+		for (let index = 0; index < columns.second.items.length; index++) {
+			let temp = columns.second.items[index].timeStamp;
+			if (temp < position) {
+				if (temp > jumpTime) {
+					jumpTime = temp;
+				}
+			}
+		}
+		setLoopStartT(jumpTime);
 
+		jumpToPreviousWord();
+		setPlaying(true);
+		setLoop(true);
+	};
+	// * set the width as the user Zoom in or out
 	const handleSetWidth = () => {
 		let tempWidth = 0;
 		let el = document.querySelectorAll("wave canvas");
@@ -86,38 +144,42 @@ export default function Main({ ayaWord, audio }) {
 		setWidth(tempWidth / 2);
 	};
 
+	// * Set the zoom ('in'/'out')
 	const handleZoom = (direction) => {
+		console.log("In handle Zoom");
 		if (direction === "in") {
 			setZoom(zoom + 100);
 		} else if (direction === "out" && zoom > 1) {
 			setZoom(zoom - 100);
 		}
 	};
+
+	// * called as soon as the waveform is loaded
 	const onWaveformReady = ({ wavesurfer }) => {
 		setDuration(wavesurfer.getDuration());
 		handleSetWidth();
 	};
 
+	// * Set the position of the audio
 	const onPosChange = (pos, wavesurf) => {
 		if (pos !== position) {
 			wavesurf && setWavesurfer(wavesurfer);
-			//!
-			// if (pos < 1) {
-			// 	setPosition(duration * pos);
-			// 	return;
-			// }
 			setPosition(pos);
 		}
 	};
 
-	// controll the play or pause ()
+	// * controll the play or pause ()
 	const handlePlaying = () => {
 		setPlaying(!playing);
 	};
-	// to move with in Audio based on the direction frwd/bkwrd or exact time stamp
-	// (direction{'frwd'/'bkwrd'} , location/timestamp)
-	const skipAhead = (direction, location) => {
-		let amount = ((duration / zoom) * 4) / 90;
+
+	// * to move with in Audio based on the direction frwd/bkwrd or exact time stamp
+	// * (direction{'frwd'/'bkwrd'} , location/timestamp , speed)
+	const skipAhead = (direction, location, speed = 1) => {
+		if (zoom === 1 && speed != 1) {
+			speed = 1.5;
+		}
+		let amount = (((duration / zoom) * 4) / 90) * speed;
 		if (location && location !== position) {
 			wavesurfer.seekTo(secondsToPosition(location));
 			onPosChange(location, wavesurfer);
@@ -143,7 +205,7 @@ export default function Main({ ayaWord, audio }) {
 			}
 		}
 	};
-	//  jump to the next or the previous word in terms of audio
+	// * jump to the next or the previous word in terms of audio
 	const jumpToNextWord = () => {
 		let jumpTime = duration;
 		for (let index = 0; index < columns.second.items.length; index++) {
@@ -315,8 +377,8 @@ export default function Main({ ayaWord, audio }) {
 		for (let index = tempArr.length - 1; index >= 0; index--) {
 			if (tempArr[index].position.y < 40) {
 				let tempPosition =
-					(width / duration) * position - tempArr[index].parentWidth;
-				//* Adding 2.8 to allign the position with audio
+					(width / duration) * (position - (position * 0.000601854) )- tempArr[index].parentWidth;
+				//* Adding -3 to allign the position with audio
 				tempArr[index].position.x = tempPosition - 3;
 				tempArr[index].position.y = 91;
 
@@ -326,7 +388,8 @@ export default function Main({ ayaWord, audio }) {
 				);
 				// * Calculating the timeStamp
 				let timeStamp =
-					(duration / width) * (tempPosition + tempArr[index].parentWidth);
+					(duration / width) * (tempPosition + 3 + tempArr[index].parentWidth);
+				timeStamp = timeStamp + timeStamp * 0.000601854;
 				//* updating the timeStamp
 				tempArr[index].timeStamp = timeStamp;
 
@@ -363,16 +426,15 @@ export default function Main({ ayaWord, audio }) {
 				style={{
 					marginTop: "15px",
 				}}
-				className={"container-sm"}
+				className={"container-fluid"}
 			>
 				<div
 					style={{
 						position: "relative",
-						// bottom: "0px",
 						left: "1.25rem",
 						zIndex: 500,
-						// maxWidth: "90%",
-						margin: "auto",
+						width: "100%",
+						// margin: "auto",
 					}}
 				>
 					<WordBank
@@ -388,16 +450,7 @@ export default function Main({ ayaWord, audio }) {
 						clickToChange={clickToChange}
 					/>
 				</div>
-				<div
-					style={{
-						position: "relative",
-						bottom: "130px",
-						left: "1.25rem",
-						margin: "auto",
-						marginBottom: "-125px",
-						// maxWidth: "90%",
-					}}
-				>
+				<div className={classes.waveSuperContainer}>
 					<Wave
 						playing={playing}
 						audio={audio}

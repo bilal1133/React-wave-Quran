@@ -10,7 +10,7 @@ export default ({
 	setWavesurfer,
 	position,
 	volume,
-	audioRate
+	audioRate,
 }) => {
 	useEffect(() => {
 		document.querySelector(".styles_reactWaves__1M36F").style.padding = " 0px ";
@@ -89,8 +89,6 @@ export default ({
 		return 4;
 	}
 
-
-	
 	function defaultSecondaryLabelInterval(pxPerSec) {
 		if (pxPerSec >= 25) {
 			return 5;
@@ -123,11 +121,11 @@ export default ({
 					// barWidth: 1,
 					barHeight: 2,
 					cursorWidth: 3,
-					cursorColor: "blue",
+					cursorColor: "#0E5CAD ",
 					height: 200,
 					hideScrollbar: false,
-					progressColor: "#ff5500",
-					responsive: false,
+					progressColor: " #79F1A4 ",
+					responsive: true,
 					fillParent: true,
 					waveColor: "#D1D6DA",
 					backend: "MediaElement",
@@ -136,11 +134,11 @@ export default ({
 					autoCenterImmediately: false,
 					dragSelection: false,
 					scrollParent: false,
-					audioRate:audioRate
+					audioRate: audioRate,
 				}}
 				volume={volume}
 				zoom={zoom}
-				pos={position}
+				// pos={position}
 				playing={playing}
 				// onPosChange={onPosChange}
 				onLoading={onLoading}
@@ -168,7 +166,6 @@ export default ({
 			></ReactWaves>
 
 			<div id="timeline" style={{ margin: "0 auto" }} />
-		
 		</div>
 	);
 };

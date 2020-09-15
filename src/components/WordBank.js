@@ -4,6 +4,21 @@ import React, { useState, useEffect } from "react";
 import { DragDropContext, Draggable, Droppable } from "react-beautiful-dnd";
 import * as Draggable2 from "react-draggable";
 
+import { createUseStyles } from "react-jss";
+
+const useStyles = createUseStyles({
+	wordContainer: {
+		"&:hover": {
+			cursor: "-webkit-grab",
+			cursor: " grab",
+		},
+		"&:active": {
+			cursor: "-webkit-grabbing",
+			cursor: "grabbing",
+		},
+	},
+});
+
 function App({
 	width,
 	setZoom,
@@ -15,7 +30,9 @@ function App({
 	fontSize,
 	clickToChange,
 }) {
-	// to Calculate the new location as the user zoom
+	const classes = useStyles();
+
+	//* to Calculate the new location as the user zoom
 	useEffect(() => {
 		let a = 0;
 		let tempArr = columns.second.items;
@@ -27,17 +44,18 @@ function App({
 			...columns,
 			second: { ...columns.second, items: [...tempArr] },
 		});
+		let containerWidth = document.querySelector(".react-waves").offsetWidth;
+		setContainerWidth(containerWidth);
 	}, [width]);
 
-	// to scroll Left for the first time for the word band container
+	//* to scroll Left for the first time for the word band container
 	useEffect(() => {
 		let el2 = document.getElementById("wordbank-continer");
 		el2.scrollLeft = 1000000;
-		let containerWidth = document.querySelector(".react-waves").offsetWidth;
-		setContainerWidth(containerWidth);
 	}, []);
 	let [containerWidth, setContainerWidth] = useState(0);
-	// called every time when the user stop draging
+
+	//* called every time when the user stop draging
 	const eventLogger = (data, index) => {
 		const tempArr = columns.second.items;
 		if (data.y < 45) {
@@ -46,13 +64,14 @@ function App({
 			data.y = 91;
 		}
 		tempArr[index].position = data;
-		// calculate the location in temrms of percentage
+		//* calculate the location in temrms of percentage
 		tempArr[index].location = Math.abs(
 			((data.x + tempArr[index].parentWidth) / width) * 100
 		);
-		// calculte the timeStamp
+		//* calculte the timeStamp
 		let timeStamp =
-			(duration / width) * (data.x + tempArr[index].parentWidth + 3);
+			(duration / width) * (data.x + 3 + tempArr[index].parentWidth);
+		timeStamp = timeStamp + timeStamp * 0.000601854;
 		//jumping to that time stamp in audio
 		// eslint-disable-next-line no-unused-expressions
 		clickToChange ? skipAhead(undefined, timeStamp) : undefined;
@@ -64,7 +83,7 @@ function App({
 		});
 		console.log("width", width);
 		console.log("duration", duration);
-		console.log("Data:", data.x + 3);
+		console.log("Data:", data.x);
 		console.log("location:", tempArr[index].location);
 		console.log("position:", tempArr[index].position);
 
@@ -90,7 +109,7 @@ function App({
 			const destItems = [...destColumn.items];
 			const [removed] = sourceItems.splice(source.index, 1);
 			let el = document.getElementById("dnd-container").scrollLeft;
-			removed.position.x = el + 3;
+			removed.position.x = el;
 			removed.parentWidth = temp;
 			destItems.splice(destination.index, 0, removed);
 
@@ -121,8 +140,7 @@ function App({
 	};
 
 	return (
-		<div style={{ width: containerWidth }} >
-		
+		<div style={{ width: containerWidth }}>
 			<DragDropContext onDragEnd={(result) => onDragEnd(result)}>
 				<div key={"first"}>
 					<Droppable droppableId={"first"} key={"first"} direction="horizontal">
@@ -152,7 +170,7 @@ function App({
 											>
 												{(provided, snapshot) => {
 													return (
-														<div 
+														<div
 															onClick={() => {
 																moveWordFromTopToBottom(undefined, index);
 															}}
@@ -224,7 +242,7 @@ function App({
 												: "rgb(69, 108, 134,0.1)",
 											// minHeight: 50,
 											height: "300px",
-											
+
 											// border: "2px solid blue",
 										}}
 									>
@@ -251,6 +269,7 @@ function App({
 														bounds="parent"
 													>
 														<div
+															className={classes.wordContainer}
 															style={{
 																// marginLeft: item.position.y < 40 ?  `${"-20px"}` : "0px",
 																height: item.position.y < 40 ? "0px" : "40%",

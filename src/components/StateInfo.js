@@ -18,7 +18,7 @@ export default function StateInfo({
 }) {
 	const classes = useStyles();
 	return (
-		<div className="container-sm d-flex justify-content-around mt-2 ">
+		<div className="container-sm d-flex flex-wrap justify-content-around mt-2 ">
 			<p className={"badge badge-primary p-2 " + classes.fontSizeLg}>
 				Position{" "}
 				<span className={"badge badge-info "  + classes.fontSizeLg}>

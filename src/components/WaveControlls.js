@@ -2,6 +2,15 @@
 
 import React, { useEffect } from "react";
 import { Form, OverlayTrigger, Tooltip } from "react-bootstrap";
+
+import { createUseStyles } from "react-jss";
+
+const useStyles = createUseStyles({
+	marginAuto: {
+		margin: "auto",
+	},
+});
+
 export default function WaveControlls({
 	handleZoom,
 	setPlaying,
@@ -20,6 +29,8 @@ export default function WaveControlls({
 	setClickToChange,
 	clickToChange,
 }) {
+	const classes = useStyles();
+
 	// * 🎹 shotcuts
 	document.onkeydown = function (e) {
 		var e = e || window.event; // for IE to cover IEs window event-object
@@ -30,6 +41,12 @@ export default function WaveControlls({
 		if (e.keyCode === 39) {
 			skipAhead("frwd");
 		}
+		if (e.shiftKey && e.keyCode === 37) {
+			skipAhead("bkwrd", undefined, 50);
+		}
+		if (e.shiftKey && e.keyCode === 39) {
+			skipAhead("frwd", undefined, 50);
+		}
 		if (e.keyCode === 221) {
 			handleAudioRate("inc");
 		}
@@ -37,8 +54,14 @@ export default function WaveControlls({
 			handleAudioRate("dec");
 		}
 	};
+
 	document.onkeyup = function (e) {
 		var e = e || window.event; // for IE to cover IEs window event-object
+		if (e.keyCode === 116 || (e.ctrlKey && e.keyCode === 82)) {
+			// eslint-disable-next-line no-restricted-globals
+			location.reload();
+			return false;
+		}
 		if (e.keyCode === 107 || e.keyCode === 187) {
 			handleZoom("in");
 		}
@@ -70,28 +93,25 @@ export default function WaveControlls({
 		if (e.keyCode === 49 || e.keyCode === 97) {
 			moveWordFromTopToBottom(1, undefined);
 		}
-		if (e.keyCode === 98 || e.keyCode === 50) {
-			moveWordFromTopToBottom(2, undefined);
-		}
-		if (e.keyCode === 101 || e.keyCode === 53) {
+		if (e.keyCode === 50 || e.keyCode === 98) {
 			moveWordFromTopToBottom(5, undefined);
 		}
-		if (e.keyCode === 57 || e.keyCode === 105) {
-			moveWordFromTopToBottom(9, undefined);
-		}
-
 		if (e.keyCode === 87) {
 			alignNotUsedWords();
 		}
-		if (e.keyCode === 82) {
+		if (e.keyCode === 76) {
 			loopCurrentSegment();
+		}
+		if (e.keyCode === 83) {
+			moveWordFromTopToBottom(1, undefined);
+			handleKeyboardMap();
 		}
 		if (e.keyCode === 96 || e.keyCode === 48) {
 			handleAudioRate(undefined, 1);
 		}
 	};
 	return (
-		<div className="container-sm d-flex justify-content-around my-2 flex-wrap">
+		<div className="container-sm d-flex justify-content-around m-2 mx-auto  mx-auto flex-wrap">
 			<OverlayTrigger
 				placement="bottom"
 				overlay={
@@ -105,7 +125,7 @@ export default function WaveControlls({
 				}
 			>
 				<button
-					className="my-2 btn btn-primary"
+					className="m-2 mx-auto  btn btn-primary"
 					onClick={() => {
 						setPlaying(!playing);
 					}}
@@ -126,7 +146,7 @@ export default function WaveControlls({
 				}
 			>
 				<button
-					className="btn my-2 btn-secondary"
+					className="btn m-2 mx-auto  btn-secondary"
 					onClick={() => {
 						handleZoom("in");
 					}}
@@ -148,7 +168,7 @@ export default function WaveControlls({
 				}
 			>
 				<button
-					className="btn my-2 btn-secondary"
+					className="btn m-2 mx-auto  btn-secondary"
 					onClick={() => {
 						handleZoom("out");
 					}}
@@ -170,8 +190,10 @@ export default function WaveControlls({
 				}
 			>
 				<button
-					className="btn my-2 btn-primary"
-					onClick={() => skipAhead("bkwrd")}
+					className="btn m-2 mx-auto  btn-primary"
+					onClick={() => {
+						skipAhead("bkwrd");
+					}}
 				>
 					{"⏪"}
 				</button>
@@ -190,7 +212,7 @@ export default function WaveControlls({
 				}
 			>
 				<button
-					className="btn my-2 btn-primary"
+					className="btn m-2 mx-auto  btn-primary"
 					onClick={() => skipAhead("frwd")}
 				>
 					{"⏩"}
@@ -200,7 +222,7 @@ export default function WaveControlls({
 				placement="bottom"
 				overlay={
 					<Tooltip id="button-tooltip-2">
-						Allign Not Used Words <b />
+						Align Not Used Words <b />
 						<p>
 							{" "}
 							<strong>W</strong>
@@ -209,13 +231,13 @@ export default function WaveControlls({
 				}
 			>
 				<button
-					className={"my-2 btn btn-success"}
+					className={"m-2 mx-auto  btn btn-success"}
 					onClick={() => {
 						alignNotUsedWords();
 					}}
 				>
 					{" "}
-					{"Allighn"}{" "}
+					{"Align"}{" "}
 				</button>
 			</OverlayTrigger>
 			<OverlayTrigger
@@ -232,7 +254,7 @@ export default function WaveControlls({
 				}
 			>
 				<button
-					className={"my-2 btn btn-info"}
+					className={"m-2 mx-auto  btn btn-info"}
 					onClick={() => {
 						moveWordFromTopToBottom(5);
 					}}
@@ -254,7 +276,7 @@ export default function WaveControlls({
 				}
 			>
 				<button
-					className={"my-2 btn btn-info"}
+					className={"m-2 mx-auto  btn btn-info"}
 					onClick={() => {
 						jumpToNextWord();
 					}}
@@ -277,7 +299,7 @@ export default function WaveControlls({
 				}
 			>
 				<button
-					className={"my-2 btn btn-info"}
+					className={"m-2 mx-auto  btn btn-info"}
 					onClick={() => {
 						jumpToPreviousWord();
 					}}
@@ -300,7 +322,7 @@ export default function WaveControlls({
 				}
 			>
 				<button
-					className={"my-2 btn btn-info"}
+					className={"m-2 mx-auto  btn btn-info"}
 					onClick={() => {
 						handleAudioRate("dec");
 					}}
@@ -323,7 +345,7 @@ export default function WaveControlls({
 				}
 			>
 				<button
-					className={"my-2 btn btn-info"}
+					className={"m-2 mx-auto  btn btn-info"}
 					onClick={() => {
 						handleAudioRate("inc");
 					}}
@@ -342,7 +364,7 @@ export default function WaveControlls({
 				}
 			>
 				<button
-					className={"my-2 btn btn-info"}
+					className={"m-2 mx-auto  btn btn-info"}
 					onClick={() => {
 						handleFontSize("inc");
 					}}
@@ -362,13 +384,37 @@ export default function WaveControlls({
 				}
 			>
 				<button
-					className={"my-2 btn btn-info"}
+					className={"m-2 mx-auto  btn btn-info"}
 					onClick={() => {
 						handleFontSize("dec");
 					}}
 				>
 					{" "}
 					{"Font --"}{" "}
+				</button>
+			</OverlayTrigger>
+			<OverlayTrigger
+				placement="bottom"
+				overlay={
+					<Tooltip id="button-tooltip-2">
+						Move and Map the word to current time Stamp
+						<b />
+						<p>
+							{" "}
+							<strong>S</strong>
+						</p>
+					</Tooltip>
+				}
+			>
+				<button
+					className={"m-2 mx-auto  btn btn-info"}
+					onClick={() => {
+						moveWordFromTopToBottom(1, undefined);
+						handleKeyboardMap();
+					}}
+				>
+					{" "}
+					{"Move And Map 🚩"}{" "}
 				</button>
 			</OverlayTrigger>
 			<OverlayTrigger
@@ -384,7 +430,9 @@ export default function WaveControlls({
 				}
 			>
 				<button
-					className={loop ? "my-2 btn btn-danger" : "my-2 btn btn-info"}
+					className={
+						loop ? "m-2 mx-auto  btn btn-danger" : "m-2 mx-auto  btn btn-info"
+					}
 					onClick={() => {
 						loopCurrentSegment();
 					}}
@@ -407,7 +455,7 @@ export default function WaveControlls({
 				}
 			>
 				<button
-					className={"my-2 btn btn-warning"}
+					className={"m-2 mx-auto  btn btn-warning"}
 					onClick={() => {
 						handleKeyboardMap();
 					}}
@@ -416,14 +464,23 @@ export default function WaveControlls({
 					{"Place Flag"}{" "}
 				</button>
 			</OverlayTrigger>
-			<div className={"my-2 button button-outline-primary p-2"}>
-				<Form.Check
-					type={"checkbox"}
-					label="Automatically Snap to Audio"
-					checked={clickToChange}
-					onChange={() => setClickToChange(!clickToChange)}
-				/>
-			</div>
+			<OverlayTrigger
+				placement="bottom"
+				overlay={
+					<Tooltip id="button-tooltip-2">
+						Automatically Snap to Audio <b />
+					</Tooltip>
+				}
+			>
+				<div className={"m-2 mx-auto  button button-outline-primary p-2"}>
+					<Form.Check
+						type={"checkbox"}
+						label="Auto Snap"
+						checked={clickToChange}
+						onChange={() => setClickToChange(!clickToChange)}
+					/>
+				</div>
+			</OverlayTrigger>
 		</div>
 	);
 }
