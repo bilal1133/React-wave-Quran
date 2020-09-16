@@ -29,6 +29,7 @@ function App({
 	moveWordFromTopToBottom,
 	fontSize,
 	clickToChange,
+	containerWidth
 }) {
 	const classes = useStyles();
 
@@ -44,8 +45,6 @@ function App({
 			...columns,
 			second: { ...columns.second, items: [...tempArr] },
 		});
-		let containerWidth = document.querySelector(".react-waves").offsetWidth;
-		setContainerWidth(containerWidth);
 	}, [width]);
 
 	//* to scroll Left for the first time for the word band container
@@ -53,8 +52,6 @@ function App({
 		let el2 = document.getElementById("wordbank-continer");
 		el2.scrollLeft = 1000000;
 	}, []);
-	let [containerWidth, setContainerWidth] = useState(0);
-
 	//* called every time when the user stop draging
 	const eventLogger = (data, index) => {
 		const tempArr = columns.second.items;
@@ -88,10 +85,10 @@ function App({
 		console.log("position:", tempArr[index].position);
 
 		console.log("timeStamp", timeStamp);
-		// console.log("index", index);
+	
 	};
 
-	// called as the word is draged from the wordbank to the
+	//* called as the word is draged from the wordbank to the
 	const onDragEnd = (result) => {
 		console.log("the result is ", result);
 		if (!result.destination) return;
@@ -234,6 +231,8 @@ function App({
 										}}
 										style={{
 											display: "flex",
+											// !
+											// alignContent:"flex-start",
 											overflow: "hidden",
 											flexWrap: "wrap",
 											width: `${width}px`,

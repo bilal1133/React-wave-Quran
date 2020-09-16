@@ -28,24 +28,40 @@ export default function WaveControlls({
 	handleKeyboardMap,
 	setClickToChange,
 	clickToChange,
+	undoLastMap,
+	handleLatency
 }) {
 	const classes = useStyles();
 
 	// * 🎹 shotcuts
+
+	document.addEventListener("wheel", mouseWheel);
+
+	function mouseWheel(e) {
+		e.preventDefault();
+		if (e.deltaY / 120 > 0) {
+			console.log("scrolling up !");
+			handleAudioRate("inc");
+		} else {
+			console.log("scrolling down !");
+			handleAudioRate("dec");
+		}
+	}
+
 	document.onkeydown = function (e) {
 		var e = e || window.event; // for IE to cover IEs window event-object
 		e.preventDefault();
 		if (e.keyCode === 37) {
-			skipAhead("bkwrd");
-		}
-		if (e.keyCode === 39) {
-			skipAhead("frwd");
-		}
-		if (e.shiftKey && e.keyCode === 37) {
 			skipAhead("bkwrd", undefined, 50);
 		}
-		if (e.shiftKey && e.keyCode === 39) {
+		if (e.keyCode === 39) {
 			skipAhead("frwd", undefined, 50);
+		}
+		if (e.shiftKey && e.keyCode === 37) {
+			skipAhead("bkwrd");
+		}
+		if (e.shiftKey && e.keyCode === 39) {
+			skipAhead("frwd");
 		}
 		if (e.keyCode === 221) {
 			handleAudioRate("inc");
@@ -78,7 +94,7 @@ export default function WaveControlls({
 			setVolume("up");
 		}
 		if (e.keyCode === 77) {
-			e.preventDefault();
+			// e.preventDefault();
 			setVolume("mute");
 		}
 		if (e.keyCode === 81) {
@@ -102,6 +118,13 @@ export default function WaveControlls({
 		if (e.keyCode === 76) {
 			loopCurrentSegment();
 		}
+		if (e.keyCode === 90) {
+			undoLastMap();
+		}
+		if (e.keyCode === 99 || e.keyCode === 51) {
+			moveWordFromTopToBottom(1, undefined, true);
+		}
+		// *  move the flag and also map it to the current timeStamp
 		if (e.keyCode === 83) {
 			moveWordFromTopToBottom(1, undefined);
 			handleKeyboardMap();
@@ -111,7 +134,7 @@ export default function WaveControlls({
 		}
 	};
 	return (
-		<div className="container-sm d-flex justify-content-around m-2 mx-auto  mx-auto flex-wrap">
+		<div className="container-sm d-flex justify-content-center   flex-wrap">
 			<OverlayTrigger
 				placement="bottom"
 				overlay={
@@ -421,6 +444,29 @@ export default function WaveControlls({
 				placement="bottom"
 				overlay={
 					<Tooltip id="button-tooltip-2">
+						Undo Last Map Word
+						<b />
+						<p>
+							{" "}
+							<strong>Z</strong>
+						</p>
+					</Tooltip>
+				}
+			>
+				<button
+					className={"m-2 mx-auto  btn btn-info"}
+					onClick={() => {
+						undoLastMap();
+					}}
+				>
+					{" "}
+					{"Undo Map 🔀"}{" "}
+				</button>
+			</OverlayTrigger>
+			<OverlayTrigger
+				placement="bottom"
+				overlay={
+					<Tooltip id="button-tooltip-2">
 						Loop Specific Section <b />
 						<p>
 							{" "}
@@ -439,6 +485,30 @@ export default function WaveControlls({
 				>
 					{" "}
 					{"Loop➰"}{" "}
+				</button>
+			</OverlayTrigger>
+			<OverlayTrigger
+				placement="bottom"
+				overlay={
+					<Tooltip id="button-tooltip-2">
+						Handle Latency<b />
+						<p>
+							{" "}
+							{/* <strong>R</strong> */}
+						</p>
+					</Tooltip>
+				}
+			>
+				<button
+					className={
+					"m-2 mx-auto  btn btn-danger" 
+					}
+					onClick={() => {
+						handleLatency();
+					}}
+				>
+					{" "}
+					{"Handle Latency"}{" "}
 				</button>
 			</OverlayTrigger>
 			<OverlayTrigger
@@ -472,7 +542,14 @@ export default function WaveControlls({
 					</Tooltip>
 				}
 			>
-				<div className={"m-2 mx-auto  button button-outline-primary p-2"}>
+				<div
+					className={
+						clickToChange
+							? "m-2 mx-auto   p-2  btn btn-success"
+							: "m-2 mx-auto   p-2 btn btn-outline-primary"
+					}
+					onClick={() => setClickToChange(!clickToChange)}
+				>
 					<Form.Check
 						type={"checkbox"}
 						label="Auto Snap"

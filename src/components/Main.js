@@ -18,8 +18,8 @@ const useStyles = createUseStyles({
 		marginBottom: "-125px",
 		width: "100%",
 		"&:hover": {
-			cursor: "-webkit-grab",
-			cursor: " grab",
+			cursor: "-webkit-crosshair",
+			cursor: "crosshair",
 		},
 		"&:active": {
 			cursor: "-webkit-grabbing",
@@ -34,7 +34,7 @@ const useStyles = createUseStyles({
 export default function Main({ ayaWord, audio }) {
 	const classes = useStyles();
 
-	let [zoom, setZoom] = useState(1);
+	let [zoom, setZoom] = useState(2);
 	let [width, setWidth] = useState(1);
 	let [duration, setDuration] = useState(0);
 	let [playing, setPlaying] = useState(false);
@@ -47,6 +47,8 @@ export default function Main({ ayaWord, audio }) {
 	let [loop, setLoop] = useState(false);
 	let [loopEnding, setLoopEnding] = useState(0);
 	let [loopStartT, setLoopStartT] = useState(0);
+	let [containerWidth, setContainerWidth] = useState(0);
+	let [latency, setLatency] = useState(0);
 	// two containers for drag and drop
 	const dnd_columns = {
 		first: {
@@ -89,6 +91,9 @@ export default function Main({ ayaWord, audio }) {
 	// * Set the new width fot the transparent box as the user zoom in/out
 	useEffect(() => {
 		handleSetWidth();
+
+		let containerWidth = document.querySelector(".react-waves").offsetWidth;
+		setContainerWidth(containerWidth);
 	}, [zoom]);
 
 	// *  for the section loop functionality
@@ -146,7 +151,6 @@ export default function Main({ ayaWord, audio }) {
 
 	// * Set the zoom ('in'/'out')
 	const handleZoom = (direction) => {
-		console.log("In handle Zoom");
 		if (direction === "in") {
 			setZoom(zoom + 100);
 		} else if (direction === "out" && zoom > 1) {
@@ -180,12 +184,20 @@ export default function Main({ ayaWord, audio }) {
 			speed = 1.5;
 		}
 		let amount = (((duration / zoom) * 4) / 90) * speed;
+
 		if (location && location !== position) {
 			wavesurfer.seekTo(secondsToPosition(location));
 			onPosChange(location, wavesurfer);
 			return;
 		}
 		if (direction === "frwd") {
+			// * to scroll as we move left or right on the audio
+			let tempPosition = (width / duration) * position;
+			let el = document.querySelector("wave");
+			if (tempPosition > el.scrollLeft + containerWidth) {
+				//* calculating the width from time stamp to scroll to that position
+				el.scrollLeft = tempPosition;
+			}
 			if (position + amount < duration) {
 				wavesurfer.seekTo(secondsToPosition(position + amount));
 				onPosChange(position + amount, wavesurfer);
@@ -203,40 +215,64 @@ export default function Main({ ayaWord, audio }) {
 				wavesurfer.seekTo(secondsToPosition(0));
 				onPosChange(0, wavesurfer);
 			}
+			// * to scroll as we move left or right on the audio
+			let tempPosition = (width / duration) * position;
+			let el = document.querySelector("wave");
+			if (tempPosition + containerWidth < el.scrollLeft) {
+				//* calculating the width from time stampto scroll to that position
+				el.scrollLeft = tempPosition;
+			}
 		}
 	};
 	// * jump to the next or the previous word in terms of audio
 	const jumpToNextWord = () => {
 		let jumpTime = duration;
+		let x = width;
 		for (let index = 0; index < columns.second.items.length; index++) {
 			let temp = columns.second.items[index].timeStamp;
 			if (temp > position + 0.01) {
 				if (temp < jumpTime) {
 					jumpTime = temp;
+					x = columns.second.items[index].position.x;
 					continue;
 				}
 			}
 		}
 		skipAhead(undefined, jumpTime);
+		//* Time stamp to position
+		// let tempPosition = (width / duration) * position;
+		let el = document.querySelector("wave");
+		if (x > el.scrollLeft + containerWidth) {
+			//* calculating the width from time stamp to scroll to that position
+			el.scrollLeft = x;
+		}
 	};
 	// to jump to the next or the previous word in terms of audio
 	const jumpToPreviousWord = () => {
 		let jumpTime = 0.01;
+		let x = 0;
 		// finding the next timeStamp closest to the current Position
 		for (let index = 0; index < columns.second.items.length; index++) {
 			let temp = columns.second.items[index].timeStamp;
 			if (temp < position) {
 				if (temp > jumpTime) {
 					jumpTime = temp;
+					x = columns.second.items[index].position.x;
 				}
 			}
 		}
 		skipAhead(undefined, jumpTime);
+		//* calculating the width from time stamp t0 scroll to that position
+		let el = document.querySelector("wave");
+		if (x + containerWidth < el.scrollLeft) {
+			//* calculating the width from time stampto scroll to that position
+			el.scrollLeft = x;
+		}
 	};
 
 	// Automatically drag the word from the wordbank and place to the transparent window.
-	// either pass the index or the numbers to remove
-	const moveWordFromTopToBottom = (number, index) => {
+	// either pass the index or the numbers to remove or set all to True to move all flags
+	const moveWordFromTopToBottom = (number, index, all = false) => {
 		if (index || index === 0) {
 			if (columns.first.items.length === 0) {
 				return;
@@ -268,7 +304,10 @@ export default function Main({ ayaWord, audio }) {
 			});
 			return;
 		}
-
+		//* if all is true then move all the flags to transparent box
+		if (all) {
+			number = columns.first.items.length;
+		}
 		for (let i = 0; i < number; i++) {
 			if (columns.first.items.length === 0) {
 				return;
@@ -278,16 +317,12 @@ export default function Main({ ayaWord, audio }) {
 			for (let i = 0; i < el2.length; i++) {
 				temp += el2[i].offsetWidth;
 			}
-			// const sourceColumn = columns[source.droppableId];
-			// const destColumn = columns[destination.droppableId];
 			const sourceItems = columns.first.items;
 			const destItems = columns.second.items;
 			const removed = sourceItems.pop();
 			let el = document.getElementById("dnd-container").scrollLeft;
 			removed.position.x = el;
 			removed.parentWidth = temp;
-			// destItems.splice(destination.i, 0, removed);
-			// destItems.push(removed);
 			destItems.splice(0, 0, removed);
 			setColumns({
 				...columns,
@@ -302,6 +337,24 @@ export default function Main({ ayaWord, audio }) {
 			});
 		}
 	};
+	//* handle Latency link to the text fieldin stateInfo
+
+	const handleLatency = () => {
+		let tempArr = columns.second.items;
+		for (let index = 0; index < tempArr.length; index++) {
+			tempArr[index].timeStamp = tempArr[index].timeStamp + parseFloat(latency);
+			console.log("Running", tempArr[index].timeStamp);
+		}
+		setColumns({
+			...columns,
+
+			second: {
+				...columns.second,
+				items: tempArr,
+			},
+		});
+	};
+
 	//* Align the not used words based on the scroll
 	const alignNotUsedWords = () => {
 		let tempArr = columns.second.items;
@@ -333,7 +386,11 @@ export default function Main({ ayaWord, audio }) {
 		return (1 / duration) * sec;
 	};
 	// to increase or decrese the volume (up/down)
-	const handleVolume = (props) => {
+	const handleVolume = (props, value) => {
+		if (value) {
+			setVolume(value);
+			return;
+		}
 		if (volume < 0.9 && props === "up") {
 			setVolume(volume + 0.1);
 		}
@@ -369,15 +426,15 @@ export default function Main({ ayaWord, audio }) {
 			setFontSize(fontSize - 2);
 		}
 	};
-	// map the first word and automatically map the word on to the audio at current timeStamp
-	// current audio position
+	// * map the first word and automatically map the word on to the audio at current timeStamp
+	// * current audio position
 	const handleKeyboardMap = () => {
 		let tempArr = columns.second.items;
 		// finding the first word based on its y position
 		for (let index = tempArr.length - 1; index >= 0; index--) {
 			if (tempArr[index].position.y < 40) {
 				let tempPosition =
-					(width / duration) * (position - (position * 0.000601854) )- tempArr[index].parentWidth;
+					(width / duration) * position - tempArr[index].parentWidth;
 				//* Adding -3 to allign the position with audio
 				tempArr[index].position.x = tempPosition - 3;
 				tempArr[index].position.y = 91;
@@ -388,8 +445,8 @@ export default function Main({ ayaWord, audio }) {
 				);
 				// * Calculating the timeStamp
 				let timeStamp =
-					(duration / width) * (tempPosition + 3 + tempArr[index].parentWidth);
-				timeStamp = timeStamp + timeStamp * 0.000601854;
+					(duration / width) * (tempPosition + 1 + tempArr[index].parentWidth);
+				// timeStamp = timeStamp + timeStamp * 0.000601854;
 				//* updating the timeStamp
 				tempArr[index].timeStamp = timeStamp;
 
@@ -405,6 +462,27 @@ export default function Main({ ayaWord, audio }) {
 			}
 		}
 	};
+	// * Undo last map
+	const undoLastMap = () => {
+		let tempArr = columns.second.items;
+		for (let index = 0; index < tempArr.length; index++) {
+			if (tempArr[index].position.y > 40) {
+				tempArr[index].position.y = 1;
+				tempArr[index].position.x = 0;
+				tempArr[index].location = 0;
+
+				break;
+			}
+		}
+		setColumns({
+			...columns,
+			second: {
+				...columns.second,
+				items: tempArr,
+			},
+		});
+	};
+
 	//* To export the data
 	const handleExportData = () => {
 		let temp = columns.second.items;
@@ -423,6 +501,7 @@ export default function Main({ ayaWord, audio }) {
 	return (
 		<div>
 			<div
+				id="bilal"
 				style={{
 					marginTop: "15px",
 				}}
@@ -448,9 +527,10 @@ export default function Main({ ayaWord, audio }) {
 						setColumns={setColumns}
 						moveWordFromTopToBottom={moveWordFromTopToBottom}
 						clickToChange={clickToChange}
+						containerWidth={containerWidth}
 					/>
 				</div>
-				<div className={classes.waveSuperContainer}>
+				<div className={classes.waveSuperContainer} id="waveSuperContainer">
 					<Wave
 						playing={playing}
 						audio={audio}
@@ -463,6 +543,7 @@ export default function Main({ ayaWord, audio }) {
 						onPosChange={onPosChange}
 						setWavesurfer={setWavesurfer}
 						onWaveformReady={onWaveformReady}
+						containerWidth={containerWidth}
 					/>
 				</div>
 			</div>
@@ -475,6 +556,9 @@ export default function Main({ ayaWord, audio }) {
 					audioRate={audioRate}
 					fontSize={fontSize}
 					position={position}
+					handleVolume={handleVolume}
+					latency={latency}
+					setLatency={setLatency}
 				/>
 				<WaveControlls
 					playing={playing}
@@ -493,6 +577,8 @@ export default function Main({ ayaWord, audio }) {
 					handleKeyboardMap={handleKeyboardMap}
 					clickToChange={clickToChange}
 					setClickToChange={setClickToChange}
+					undoLastMap={undoLastMap}
+					handleLatency={handleLatency}
 				/>
 				<div className="container-sm d-flex justify-content-between">
 					<KeyboardhotKeys />
