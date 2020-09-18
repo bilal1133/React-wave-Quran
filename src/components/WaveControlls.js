@@ -17,7 +17,6 @@ export default function WaveControlls({
 	playing,
 	loop,
 	skipAhead,
-	moveWordFromTopToBottom,
 	setVolume,
 	jumpToNextWord,
 	jumpToPreviousWord,
@@ -29,7 +28,7 @@ export default function WaveControlls({
 	setClickToChange,
 	clickToChange,
 	undoLastMap,
-	handleLatency
+	handleLatency,
 }) {
 	const classes = useStyles();
 
@@ -50,23 +49,29 @@ export default function WaveControlls({
 
 	document.onkeydown = function (e) {
 		var e = e || window.event; // for IE to cover IEs window event-object
-		e.preventDefault();
+		// e.preventDefault();
 		if (e.keyCode === 37) {
 			skipAhead("bkwrd", undefined, 50);
+			e.preventDefault();
 		}
 		if (e.keyCode === 39) {
+			e.preventDefault();
 			skipAhead("frwd", undefined, 50);
 		}
 		if (e.shiftKey && e.keyCode === 37) {
+			e.preventDefault();
 			skipAhead("bkwrd");
 		}
 		if (e.shiftKey && e.keyCode === 39) {
+			e.preventDefault();
 			skipAhead("frwd");
 		}
 		if (e.keyCode === 221) {
+			e.preventDefault();
 			handleAudioRate("inc");
 		}
 		if (e.keyCode === 219) {
+			e.preventDefault();
 			handleAudioRate("dec");
 		}
 	};
@@ -106,12 +111,7 @@ export default function WaveControlls({
 		if (e.keyCode === 80) {
 			jumpToPreviousWord();
 		}
-		if (e.keyCode === 49 || e.keyCode === 97) {
-			moveWordFromTopToBottom(1, undefined);
-		}
-		if (e.keyCode === 50 || e.keyCode === 98) {
-			moveWordFromTopToBottom(5, undefined);
-		}
+
 		if (e.keyCode === 87) {
 			alignNotUsedWords();
 		}
@@ -121,14 +121,7 @@ export default function WaveControlls({
 		if (e.keyCode === 90) {
 			undoLastMap();
 		}
-		if (e.keyCode === 99 || e.keyCode === 51) {
-			moveWordFromTopToBottom(1, undefined, true);
-		}
-		// *  move the flag and also map it to the current timeStamp
-		if (e.keyCode === 83) {
-			moveWordFromTopToBottom(1, undefined);
-			handleKeyboardMap();
-		}
+
 		if (e.keyCode === 96 || e.keyCode === 48) {
 			handleAudioRate(undefined, 1);
 		}
@@ -263,29 +256,7 @@ export default function WaveControlls({
 					{"Align"}{" "}
 				</button>
 			</OverlayTrigger>
-			<OverlayTrigger
-				placement="bottom"
-				overlay={
-					<Tooltip id="button-tooltip-2">
-						Drag 5 Words
-						<b />
-						<p>
-							{" "}
-							<strong> 5 </strong>
-						</p>
-					</Tooltip>
-				}
-			>
-				<button
-					className={"m-2 mx-auto  btn btn-info"}
-					onClick={() => {
-						moveWordFromTopToBottom(5);
-					}}
-				>
-					{" "}
-					{"Drag 5"}{" "}
-				</button>
-			</OverlayTrigger>
+
 			<OverlayTrigger
 				placement="bottom"
 				overlay={
@@ -416,30 +387,7 @@ export default function WaveControlls({
 					{"Font --"}{" "}
 				</button>
 			</OverlayTrigger>
-			<OverlayTrigger
-				placement="bottom"
-				overlay={
-					<Tooltip id="button-tooltip-2">
-						Move and Map the word to current time Stamp
-						<b />
-						<p>
-							{" "}
-							<strong>S</strong>
-						</p>
-					</Tooltip>
-				}
-			>
-				<button
-					className={"m-2 mx-auto  btn btn-info"}
-					onClick={() => {
-						moveWordFromTopToBottom(1, undefined);
-						handleKeyboardMap();
-					}}
-				>
-					{" "}
-					{"Move And Map 🚩"}{" "}
-				</button>
-			</OverlayTrigger>
+
 			<OverlayTrigger
 				placement="bottom"
 				overlay={
@@ -491,18 +439,14 @@ export default function WaveControlls({
 				placement="bottom"
 				overlay={
 					<Tooltip id="button-tooltip-2">
-						Handle Latency<b />
-						<p>
-							{" "}
-							{/* <strong>R</strong> */}
-						</p>
+						Handle Latency
+						<b />
+						<p> {/* <strong>R</strong> */}</p>
 					</Tooltip>
 				}
 			>
 				<button
-					className={
-					"m-2 mx-auto  btn btn-danger" 
-					}
+					className={"m-2 mx-auto  btn btn-danger"}
 					onClick={() => {
 						handleLatency();
 					}}

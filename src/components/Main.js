@@ -11,6 +11,20 @@ import StateInfo from "./StateInfo";
 import { createUseStyles } from "react-jss";
 
 const useStyles = createUseStyles({
+	loadingAnim: {
+		position: "fixed",
+		zIndex: "1000",
+		backgroundColor: "rgb(69, 108, 134,0.8)",
+		color: "white",
+		top: "0",
+		left: "0",
+		textAlign: "center",
+		// margin:"auto",
+		justifyContent: "center",
+		height: "100%",
+		width: "100%",
+	},
+
 	waveSuperContainer: {
 		position: "relative",
 		bottom: "130px",
@@ -33,8 +47,8 @@ const useStyles = createUseStyles({
 
 export default function Main({ ayaWord, audio }) {
 	const classes = useStyles();
-
-	let [zoom, setZoom] = useState(2);
+	let [loading, setLoading] = useState(true);
+	let [zoom, setZoom] = useState(1);
 	let [width, setWidth] = useState(1);
 	let [duration, setDuration] = useState(0);
 	let [playing, setPlaying] = useState(false);
@@ -42,7 +56,7 @@ export default function Main({ ayaWord, audio }) {
 	let [wavesurfer, setWavesurfer] = useState(null);
 	let [volume, setVolume] = useState(1);
 	let [audioRate, setAudioRate] = useState(1);
-	let [fontSize, setFontSize] = useState(12);
+	let [fontSize, setFontSize] = useState(14);
 	let [clickToChange, setClickToChange] = useState(true);
 	let [loop, setLoop] = useState(false);
 	let [loopEnding, setLoopEnding] = useState(0);
@@ -91,7 +105,6 @@ export default function Main({ ayaWord, audio }) {
 	// * Set the new width fot the transparent box as the user zoom in/out
 	useEffect(() => {
 		handleSetWidth();
-
 		let containerWidth = document.querySelector(".react-waves").offsetWidth;
 		setContainerWidth(containerWidth);
 	}, [zoom]);
@@ -133,7 +146,6 @@ export default function Main({ ayaWord, audio }) {
 			}
 		}
 		setLoopStartT(jumpTime);
-
 		jumpToPreviousWord();
 		setPlaying(true);
 		setLoop(true);
@@ -151,6 +163,7 @@ export default function Main({ ayaWord, audio }) {
 
 	// * Set the zoom ('in'/'out')
 	const handleZoom = (direction) => {
+		console.log("In handle Zoom");
 		if (direction === "in") {
 			setZoom(zoom + 100);
 		} else if (direction === "out" && zoom > 1) {
@@ -162,6 +175,7 @@ export default function Main({ ayaWord, audio }) {
 	const onWaveformReady = ({ wavesurfer }) => {
 		setDuration(wavesurfer.getDuration());
 		handleSetWidth();
+		setLoading(!loading);
 	};
 
 	// * Set the position of the audio
@@ -184,7 +198,6 @@ export default function Main({ ayaWord, audio }) {
 			speed = 1.5;
 		}
 		let amount = (((duration / zoom) * 4) / 90) * speed;
-
 		if (location && location !== position) {
 			wavesurfer.seekTo(secondsToPosition(location));
 			onPosChange(location, wavesurfer);
@@ -270,117 +283,6 @@ export default function Main({ ayaWord, audio }) {
 		}
 	};
 
-	// Automatically drag the word from the wordbank and place to the transparent window.
-	// either pass the index or the numbers to remove or set all to True to move all flags
-	const moveWordFromTopToBottom = (number, index, all = false) => {
-		if (index || index === 0) {
-			if (columns.first.items.length === 0) {
-				return;
-			}
-			let el2 = document.querySelector("#word-container").children;
-			let temp = 0;
-
-			for (let index = 0; index < el2.length; index++) {
-				temp += el2[index].offsetWidth;
-			}
-			const sourceItems = columns.first.items;
-			const destItems = columns.second.items;
-			const [removed] = sourceItems.splice(index, 1);
-			let el = document.getElementById("dnd-container").scrollLeft;
-			removed.position.x = el;
-			removed.parentWidth = temp;
-			// destItems.push(removed);
-			destItems.splice(0, 0, removed);
-			setColumns({
-				...columns,
-				first: {
-					...columns.first,
-					items: sourceItems,
-				},
-				second: {
-					...columns.second,
-					items: destItems,
-				},
-			});
-			return;
-		}
-		//* if all is true then move all the flags to transparent box
-		if (all) {
-			number = columns.first.items.length;
-		}
-		for (let i = 0; i < number; i++) {
-			if (columns.first.items.length === 0) {
-				return;
-			}
-			let el2 = document.querySelector("#word-container").children;
-			let temp = 0;
-			for (let i = 0; i < el2.length; i++) {
-				temp += el2[i].offsetWidth;
-			}
-			const sourceItems = columns.first.items;
-			const destItems = columns.second.items;
-			const removed = sourceItems.pop();
-			let el = document.getElementById("dnd-container").scrollLeft;
-			removed.position.x = el;
-			removed.parentWidth = temp;
-			destItems.splice(0, 0, removed);
-			setColumns({
-				...columns,
-				first: {
-					...columns.first,
-					items: sourceItems,
-				},
-				second: {
-					...columns.second,
-					items: destItems,
-				},
-			});
-		}
-	};
-	//* handle Latency link to the text fieldin stateInfo
-
-	const handleLatency = () => {
-		let tempArr = columns.second.items;
-		for (let index = 0; index < tempArr.length; index++) {
-			tempArr[index].timeStamp = tempArr[index].timeStamp + parseFloat(latency);
-			console.log("Running", tempArr[index].timeStamp);
-		}
-		setColumns({
-			...columns,
-
-			second: {
-				...columns.second,
-				items: tempArr,
-			},
-		});
-	};
-
-	//* Align the not used words based on the scroll
-	const alignNotUsedWords = () => {
-		let tempArr = columns.second.items;
-
-		let el = document.getElementById("dnd-container").scrollLeft;
-		let max = document.getElementById("dnd-container").scrollLeftMax;
-		// TODO
-		console.log("THE EL is", el + "Width ", width);
-
-		if (el + max >= 500) {
-			el = el - tempArr[0].parentWidth;
-		}
-		for (let index = 0; index < tempArr.length; index++) {
-			if (tempArr[index].position.y < 40) {
-				tempArr[index].position.x = el;
-				//!  tempArr[index].position.y = 45;
-			}
-		}
-		setColumns({
-			...columns,
-			second: {
-				...columns.second,
-				items: tempArr,
-			},
-		});
-	};
 	// convert the position in to secods based on the duration
 	const secondsToPosition = (sec) => {
 		return (1 / duration) * sec;
@@ -420,60 +322,63 @@ export default function Main({ ayaWord, audio }) {
 	};
 	/// increase or decrease the font
 	const handleFontSize = (value) => {
-		if (value === "inc" && fontSize < 16) {
+		if (value === "inc" && fontSize < 20) {
 			setFontSize(fontSize + 2);
 		} else if (value === "dec" && fontSize > 12) {
 			setFontSize(fontSize - 2);
 		}
 	};
-	// * map the first word and automatically map the word on to the audio at current timeStamp
-	// * current audio position
-	const handleKeyboardMap = () => {
-		let tempArr = columns.second.items;
-		// finding the first word based on its y position
-		for (let index = tempArr.length - 1; index >= 0; index--) {
-			if (tempArr[index].position.y < 40) {
-				let tempPosition =
-					(width / duration) * position - tempArr[index].parentWidth;
-				//* Adding -3 to allign the position with audio
-				tempArr[index].position.x = tempPosition - 3;
-				tempArr[index].position.y = 91;
-
-				//* calculate the location in temrm of percentage
-				tempArr[index].location = Math.abs(
-					((tempPosition + tempArr[index].parentWidth) / width) * 100
-				);
-				// * Calculating the timeStamp
-				let timeStamp =
-					(duration / width) * (tempPosition + 1 + tempArr[index].parentWidth);
-				// timeStamp = timeStamp + timeStamp * 0.000601854;
-				//* updating the timeStamp
-				tempArr[index].timeStamp = timeStamp;
-
-				setColumns({
-					...columns,
-					second: {
-						...columns.second,
-						items: tempArr,
-					},
-				});
-
-				break;
-			}
+	// * return the parent width
+	const getParentWidht = () => {
+		let temp = 0;
+		let el = document.querySelector("#word-container").children;
+		for (let index = 0; index < el.length; index++) {
+			temp += el[index].offsetWidth;
 		}
+		return temp;
 	};
-	// * Undo last map
+
+	// map the first word and automatically map the word on to the audio at current timeStamp
+	// current audio position
+	const handleKeyboardMap = () => {
+		if (columns.second.items.length === columns.first.items.length) {
+			alert("No word remaining to Map! 💀");
+			return;
+		}
+		let index = columns.second.items.length;
+		let tempWord = columns.first.items[index];
+		let tempArr = columns.second.items;
+		tempWord.parentWidth = getParentWidht();
+		console.log("tempWord.parentWidth", tempWord.parentWidth);
+		let tempPosition =
+			(width / duration) * (position - position * 0.000601854) -
+			tempWord.parentWidth;
+		//* Adding -3 to allign the position with audio
+		tempWord.position.x = tempPosition - 3;
+		tempWord.position.y = 30;
+
+		//* calculate the location in temrm of percentage
+		tempWord.location = Math.abs(
+			((tempPosition + tempWord.parentWidth) / width) * 100
+		);
+		// * Calculating the timeStamp
+		// ! Temp position should be current position
+		//* updating the timeStamp
+		tempWord.timeStamp = position;
+		tempArr.splice(0, 0, tempWord);
+		console.log("tempWord", tempArr);
+		setColumns({
+			...columns,
+			second: {
+				...columns.second,
+				items: tempArr,
+			},
+		});
+	};
 	const undoLastMap = () => {
 		let tempArr = columns.second.items;
-		for (let index = 0; index < tempArr.length; index++) {
-			if (tempArr[index].position.y > 40) {
-				tempArr[index].position.y = 1;
-				tempArr[index].position.x = 0;
-				tempArr[index].location = 0;
+		tempArr.splice(0, 1);
 
-				break;
-			}
-		}
 		setColumns({
 			...columns,
 			second: {
@@ -497,11 +402,45 @@ export default function Main({ ayaWord, audio }) {
 		});
 		console.log(tempObj);
 	};
+	const handleLatency = () => {
+		let tempArr = columns.second.items;
+		for (let index = 0; index < tempArr.length; index++) {
+			if( tempArr[index].timeStamp + parseInt(latency) >= duration ||  tempArr[index].timeStamp + parseInt(latency) <= 0 ){
+				continue;
+			}
+			tempArr[index].timeStamp = tempArr[index].timeStamp + parseFloat(latency);
+			let tempPosition =
+				(width / duration) * tempArr[index].timeStamp -
+				tempArr[index].parentWidth;
+			//* Adding -3 to allign the position with audio
+			tempArr[index].position.x = tempPosition - 3;
+			tempArr[index].position.y = 30;
+
+			//* calculate the location in temrm of percentage
+			tempArr[index].location = Math.abs(
+				((tempPosition + tempArr[index].parentWidth) / width) * 100
+			);
+			console.log("Run", tempPosition);
+		}
+		setColumns({
+			...columns,
+			second: {
+				...columns.second,
+				items: tempArr,
+			},
+		});
+	};
 
 	return (
 		<div>
+			{loading ? (
+				<div className={classes.loadingAnim}>
+					{" "}
+					<h1>Loading...</h1>{" "}
+				</div>
+			) : null}
+
 			<div
-				id="bilal"
 				style={{
 					marginTop: "15px",
 				}}
@@ -525,9 +464,7 @@ export default function Main({ ayaWord, audio }) {
 						skipAhead={skipAhead}
 						columns={columns}
 						setColumns={setColumns}
-						moveWordFromTopToBottom={moveWordFromTopToBottom}
 						clickToChange={clickToChange}
-						containerWidth={containerWidth}
 					/>
 				</div>
 				<div className={classes.waveSuperContainer} id="waveSuperContainer">
@@ -543,7 +480,6 @@ export default function Main({ ayaWord, audio }) {
 						onPosChange={onPosChange}
 						setWavesurfer={setWavesurfer}
 						onWaveformReady={onWaveformReady}
-						containerWidth={containerWidth}
 					/>
 				</div>
 			</div>
@@ -569,8 +505,6 @@ export default function Main({ ayaWord, audio }) {
 					setVolume={handleVolume}
 					jumpToNextWord={jumpToNextWord}
 					jumpToPreviousWord={jumpToPreviousWord}
-					moveWordFromTopToBottom={moveWordFromTopToBottom}
-					alignNotUsedWords={alignNotUsedWords}
 					handleAudioRate={handleAudioRate}
 					handleFontSize={handleFontSize}
 					loopCurrentSegment={loopCurrentSegment}

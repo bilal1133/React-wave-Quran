@@ -9,7 +9,7 @@ export default ({
 	setWavesurfer,
 	volume,
 	audioRate,
-	containerWidth
+	containerWidth,
 }) => {
 	useEffect(() => {
 		document.querySelector(".styles_reactWaves__1M36F").style.padding = " 0px ";
@@ -92,7 +92,7 @@ export default ({
 	}
 
 	function defaultSecondaryLabelInterval(pxPerSec) {
-		console.log('pxPerSec', pxPerSec)
+		console.log("pxPerSec", pxPerSec);
 		if (pxPerSec >= 25) {
 			return 5;
 		} else if (pxPerSec * 5 >= 25) {
@@ -168,7 +168,7 @@ export default ({
 				}}
 			></ReactWaves>
 
-			<div id="timeline" style={{ margin: "0 0" ,width:containerWidth}} />
+			<div id="timeline" style={{ margin: "0 0", width: containerWidth,overflowX:'hidden' }} />
 		</div>
 	);
 };

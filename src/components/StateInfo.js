@@ -9,7 +9,6 @@ import Slider from "@material-ui/core/Slider";
 import VolumeDown from "@material-ui/icons/VolumeDown";
 import VolumeUp from "@material-ui/icons/VolumeUp";
 import TextField from "@material-ui/core/TextField";
-import { Form } from "react-bootstrap";
 const useStyles = createUseStyles({
 	fontSizeLg: {
 		fontSize: "14px",
@@ -32,15 +31,9 @@ export default function StateInfo({
 			<p className={"badge badge-primary p-2 " + classes.fontSizeLg}>
 				TimeStamp ⏲{" "}
 				<span className={"badge badge-info " + classes.fontSizeLg}>
-					{position.toFixed(2)}
+					{position.toFixed(4)}
 				</span>
 			</p>
-			{/* <p className="badge badge-primary p-2 classes.fontSizeLg">
-				Volume{" "}
-				<span className={"badge badge-info "  + classes.fontSizeLg}>
-					{Math.round(volume * 10)}
-				</span>
-			</p> */}
 
 			<p className="badge badge-primary p-2 classes.fontSizeLg">
 				Speed{" "}
@@ -67,7 +60,7 @@ export default function StateInfo({
 				<TextField
 					id="filled-basic"
 					label="Filled"
-					type="nmber"
+					type="number"
 					value={latency}
 					onChange={(e) => setLatency(e.target.value)}
 					variant="filled"
