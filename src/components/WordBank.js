@@ -27,6 +27,7 @@ function App({
 	skipAhead,
 	fontSize,
 	clickToChange,
+	containerWidth,
 }) {
 	const classes = useStyles();
 
@@ -42,16 +43,14 @@ function App({
 			...columns,
 			second: { ...columns.second, items: [...tempArr] },
 		});
-		let containerWidth = document.querySelector(".react-waves").offsetWidth;
-		setContainerWidth(containerWidth);
-	}, [width]);
 
-	//* to scroll Left for the first time for the word band container
-	useEffect(() => {
-		let el2 = document.getElementById("wordbank-continer");
-		el2.scrollLeft = 1000000;
-	}, []);
-	let [containerWidth, setContainerWidth] = useState(0);
+		//* Syncronizing the scroll of the word and wave container as we zoom
+		let waveScroll = document.querySelector("wave").scrollLeft;
+		let el = document.getElementById("dnd-container");
+		let el2 = document.getElementById("timeline");
+		el.scrollLeft = waveScroll;
+		el2.scrollLeft = waveScroll;
+	}, [width]);
 
 	//* called every time when the user stop draging
 	const eventLogger = (data, index) => {
@@ -64,6 +63,7 @@ function App({
 		);
 		//* calculte the timeStamp
 		let timeStamp = (duration / width) * (data.x + tempArr[index].parentWidth);
+		timeStamp += timeStamp * 0.000601854;
 		//jumping to that time stamp in audio
 		// eslint-disable-next-line no-unused-expressions
 		clickToChange ? skipAhead(undefined, timeStamp) : undefined;
@@ -102,7 +102,7 @@ function App({
 				{columns.first.items.map((item, index) => {
 					let color = "transparent";
 					if (columns.second.items.length === index) {
-						color = "red";
+						color = "#3385ff";
 					} else if (columns.second.items.length > index) {
 						color = "#28a745";
 					}

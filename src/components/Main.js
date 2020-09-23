@@ -5,8 +5,7 @@ import React, { useState, useEffect } from "react";
 import WordBank from "./WordBank";
 import Wave from "./Wave";
 import WaveControlls from "./WaveControlls";
-import KeyboardhotKeys from "./KeyboardhotKeys";
-import StateInfo from "./StateInfo";
+import { Button, Modal } from "react-bootstrap";
 
 import { createUseStyles } from "react-jss";
 
@@ -31,13 +30,13 @@ const useStyles = createUseStyles({
 		left: "1.25rem",
 		marginBottom: "-125px",
 		width: "100%",
-		"&:hover": {
-			cursor: "-webkit-crosshair",
-			cursor: "crosshair",
-		},
+		// "&:hover": {
+		// 	cursor: "-webkit-crosshair",
+		// 	cursor: "crosshair",
+		// },
 		"&:active": {
 			cursor: "-webkit-grabbing",
-			cursor: "grabbing",
+			// cursor: "grabbing",
 		},
 	},
 	fontSizeLg: {
@@ -63,6 +62,10 @@ export default function Main({ ayaWord, audio }) {
 	let [loopStartT, setLoopStartT] = useState(0);
 	let [containerWidth, setContainerWidth] = useState(0);
 	let [latency, setLatency] = useState(0);
+	const [show, setShow] = useState(false);
+
+	const handleModal = () => setShow(!show);
+
 	// two containers for drag and drop
 	const dnd_columns = {
 		first: {
@@ -78,6 +81,10 @@ export default function Main({ ayaWord, audio }) {
 	const [columns, setColumns] = useState(dnd_columns);
 	// * Calculate the position of the audio
 	useEffect(() => {
+		let containerWidth = document.querySelector(".react-waves").offsetWidth;
+		setContainerWidth(containerWidth);
+
+
 		let tempAudio = document.querySelector("audio");
 		tempAudio.addEventListener(
 			"timeupdate",
@@ -87,21 +94,24 @@ export default function Main({ ayaWord, audio }) {
 			},
 			false
 		);
-	}, []);
 
-	// * Checking if the user Resize the window then adjust the transparent box
-	// * and the also resizt the audio by zooming in and out
+		// * Checking if the user Resize the window then adjust the transparent box
+		// * and the also resizt the audio by zooming in and out
+
+		var doit;
+		window.onresize = function () {
+			clearTimeout(doit);
+			doit = setTimeout(resizedw, 100);
+		};
+	
+	}, []);
 	function resizedw() {
 		// Haven't resized in 100ms!
 		handleZoom("in");
 		handleZoom("out");
+		let containerWidth = document.querySelector(".react-waves").offsetWidth;
+		setContainerWidth(containerWidth);
 	}
-	var doit;
-	window.onresize = function () {
-		clearTimeout(doit);
-		doit = setTimeout(resizedw, 100);
-	};
-
 	// * Set the new width fot the transparent box as the user zoom in/out
 	useEffect(() => {
 		handleSetWidth();
@@ -112,11 +122,10 @@ export default function Main({ ayaWord, audio }) {
 	// *  for the section loop functionality
 	useEffect(() => {
 		if (position >= loopEnding && loop === true) {
-			// jumpToPreviousWord();
 			skipAhead(undefined, loopStartT);
 		}
 	}, [loop, position]);
-
+	//! don't you think the loop should be removed
 	const loopCurrentSegment = () => {
 		if (loop === true) {
 			handlePlaying();
@@ -153,17 +162,16 @@ export default function Main({ ayaWord, audio }) {
 	// * set the width as the user Zoom in or out
 	const handleSetWidth = () => {
 		let tempWidth = 0;
-		let el = document.querySelectorAll("wave canvas");
+		let element = document.querySelectorAll("wave canvas");
 
-		for (let index = 0; index < el.length; index++) {
-			tempWidth += el[index].getBoundingClientRect().width;
+		for (let index = 0; index < element.length; index++) {
+			tempWidth += element[index].getBoundingClientRect().width;
 		}
 		setWidth(tempWidth / 2);
 	};
 
 	// * Set the zoom ('in'/'out')
 	const handleZoom = (direction) => {
-		console.log("In handle Zoom");
 		if (direction === "in") {
 			setZoom(zoom + 100);
 		} else if (direction === "out" && zoom > 1) {
@@ -322,7 +330,7 @@ export default function Main({ ayaWord, audio }) {
 	};
 	/// increase or decrease the font
 	const handleFontSize = (value) => {
-		if (value === "inc" && fontSize < 20) {
+		if (value === "inc" && fontSize < 50) {
 			setFontSize(fontSize + 2);
 		} else if (value === "dec" && fontSize > 12) {
 			setFontSize(fontSize - 2);
@@ -342,19 +350,20 @@ export default function Main({ ayaWord, audio }) {
 	// current audio position
 	const handleKeyboardMap = () => {
 		if (columns.second.items.length === columns.first.items.length) {
-			alert("No word remaining to Map! 💀");
+			handleModal();
 			return;
 		}
+
+		let position2 = position - position * 0.0006;
+
 		let index = columns.second.items.length;
 		let tempWord = columns.first.items[index];
 		let tempArr = columns.second.items;
 		tempWord.parentWidth = getParentWidht();
-		console.log("tempWord.parentWidth", tempWord.parentWidth);
-		let tempPosition =
-			(width / duration) * (position - position * 0.000601854) -
-			tempWord.parentWidth;
+		let tempPosition = (width / duration) * position2 - tempWord.parentWidth;
 		//* Adding -3 to allign the position with audio
-		tempWord.position.x = tempPosition - 3;
+
+		tempWord.position.x = tempPosition;
 		tempWord.position.y = 30;
 
 		//* calculate the location in temrm of percentage
@@ -363,10 +372,12 @@ export default function Main({ ayaWord, audio }) {
 		);
 		// * Calculating the timeStamp
 		// ! Temp position should be current position
+		//* calculte the timeStamp
+		// let timeStamp = (duration / width) * (tempPosition + tempWord.parentWidth);
+		// timeStamp += timeStamp * 0.000601854;
 		//* updating the timeStamp
 		tempWord.timeStamp = position;
 		tempArr.splice(0, 0, tempWord);
-		console.log("tempWord", tempArr);
 		setColumns({
 			...columns,
 			second: {
@@ -402,25 +413,64 @@ export default function Main({ ayaWord, audio }) {
 		});
 		console.log(tempObj);
 	};
-	const handleLatency = () => {
+	const calculatePP = (tempWord) => {
+		if (
+			tempWord.timeStamp + parseInt(latency) >= duration ||
+			tempWord.timeStamp + parseInt(latency) <= 0
+		) {
+			return tempWord;
+		}
+
+		tempWord.timeStamp = tempWord.timeStamp + parseFloat(latency);
+		// * tempWord.timeStamp - tempWord.timeStamp * 0.0006 inorder to componstate Error
+		let tempPosition =
+			(width / duration) * (tempWord.timeStamp - tempWord.timeStamp * 0.0006) -
+			tempWord.parentWidth;
+		//* Adding -3 to allign the position with audio
+		tempWord.position.x = tempPosition - 3;
+		tempWord.position.y = 30;
+
+		//* calculate the location in temrm of percentage
+		tempWord.location = Math.abs(
+			((tempPosition + tempWord.parentWidth) / width) * 100
+		);
+		return tempWord;
+	};
+
+	const handleLatency = (single) => {
+		if (single) {
+			let jumpTime = 0.01;
+			let word = {};
+			let i = 0;
+			// finding the previous timeStamp closest to the current Position
+			for (let index = 0; index < columns.second.items.length; index++) {
+				let temp = columns.second.items[index].timeStamp;
+				if (temp < position) {
+					if (temp > jumpTime) {
+						jumpTime = temp;
+						word = columns.second.items[index];
+						i = index;
+					}
+				}
+			}
+			if (word.word) {
+				word = calculatePP(word);
+				let tempArr = columns.second.items;
+				tempArr[i] = word;
+				setColumns({
+					...columns,
+					second: {
+						...columns.second,
+						items: tempArr,
+					},
+				});
+			}
+			return;
+		}
+		setLoading(true);
 		let tempArr = columns.second.items;
 		for (let index = 0; index < tempArr.length; index++) {
-			if( tempArr[index].timeStamp + parseInt(latency) >= duration ||  tempArr[index].timeStamp + parseInt(latency) <= 0 ){
-				continue;
-			}
-			tempArr[index].timeStamp = tempArr[index].timeStamp + parseFloat(latency);
-			let tempPosition =
-				(width / duration) * tempArr[index].timeStamp -
-				tempArr[index].parentWidth;
-			//* Adding -3 to allign the position with audio
-			tempArr[index].position.x = tempPosition - 3;
-			tempArr[index].position.y = 30;
-
-			//* calculate the location in temrm of percentage
-			tempArr[index].location = Math.abs(
-				((tempPosition + tempArr[index].parentWidth) / width) * 100
-			);
-			console.log("Run", tempPosition);
+			tempArr[index] = calculatePP(tempArr[index]);
 		}
 		setColumns({
 			...columns,
@@ -429,10 +479,12 @@ export default function Main({ ayaWord, audio }) {
 				items: tempArr,
 			},
 		});
+		setLoading(false);
 	};
 
 	return (
 		<div>
+			<CustomModal show={show} handleModal={handleModal} />
 			{loading ? (
 				<div className={classes.loadingAnim}>
 					{" "}
@@ -465,6 +517,7 @@ export default function Main({ ayaWord, audio }) {
 						columns={columns}
 						setColumns={setColumns}
 						clickToChange={clickToChange}
+						containerWidth={containerWidth}
 					/>
 				</div>
 				<div className={classes.waveSuperContainer} id="waveSuperContainer">
@@ -480,25 +533,18 @@ export default function Main({ ayaWord, audio }) {
 						onPosChange={onPosChange}
 						setWavesurfer={setWavesurfer}
 						onWaveformReady={onWaveformReady}
+						containerWidth={containerWidth}
 					/>
 				</div>
 			</div>
 			<div
 			// style={{clear:'left'}}
 			>
-				<StateInfo
-					zoom={zoom}
-					volume={volume}
-					audioRate={audioRate}
-					fontSize={fontSize}
-					position={position}
-					handleVolume={handleVolume}
-					latency={latency}
-					setLatency={setLatency}
-				/>
 				<WaveControlls
 					playing={playing}
 					loop={loop}
+					handleVolume={handleVolume}
+					volume={volume}
 					handleZoom={handleZoom}
 					setPlaying={handlePlaying}
 					skipAhead={skipAhead}
@@ -513,17 +559,30 @@ export default function Main({ ayaWord, audio }) {
 					setClickToChange={setClickToChange}
 					undoLastMap={undoLastMap}
 					handleLatency={handleLatency}
+					position={position}
+					zoom={zoom}
+					audioRate={audioRate}
+					fontSize={fontSize}
+					handleExportData={handleExportData}
+					latency={latency}
+					setLatency={setLatency}
 				/>
-				<div className="container-sm d-flex justify-content-between">
-					<KeyboardhotKeys />
-					<button
-						className="btn btn-outline-info "
-						onClick={() => handleExportData()}
-					>
-						Export Data
-					</button>
-				</div>
+				<div className="container-sm  d-flex justify-content-around m-3"></div>
 			</div>
 		</div>
 	);
 }
+
+const CustomModal = ({ show, handleModal }) => (
+	<Modal show={show} onHide={handleModal}>
+		<Modal.Header closeButton>
+			<Modal.Title>Message</Modal.Title>
+		</Modal.Header>
+		<Modal.Body>No Word Remaining to Map</Modal.Body>
+		<Modal.Footer>
+			<Button variant="secondary" onClick={handleModal}>
+				Close
+			</Button>
+		</Modal.Footer>
+	</Modal>
+);

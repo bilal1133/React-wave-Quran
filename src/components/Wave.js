@@ -26,26 +26,25 @@ export default ({
 			el2.scrollLeft = e.target.scrollLeft;
 		};
 
+		// * Adding the draging functionality to wave so that it can scroll as we drag mouse over it
 		let el = document.querySelector("wave");
 		let x = 0,
 			left = 0;
-
 		let draggingFunction = (e) => {
-			// el.scrollLeft += 10;
 			document.addEventListener("mouseup", (e) => {
 				e.preventDefault();
 				document.removeEventListener("mousemove", draggingFunction);
 			});
-
 			el.scrollLeft = left - e.pageX + x;
 		};
-
 		el.addEventListener("mousedown", (e) => {
 			e.preventDefault();
-
 			x = e.pageX;
 			left = el.scrollLeft;
-
+			document.addEventListener("mouseup", (e) => {
+				e.preventDefault();
+				document.removeEventListener("mousemove", draggingFunction);
+			});
 			document.addEventListener("mousemove", draggingFunction);
 		});
 	}, []);
@@ -92,7 +91,6 @@ export default ({
 	}
 
 	function defaultSecondaryLabelInterval(pxPerSec) {
-		console.log("pxPerSec", pxPerSec);
 		if (pxPerSec >= 25) {
 			return 5;
 		} else if (pxPerSec * 5 >= 25) {
@@ -106,11 +104,7 @@ export default ({
 	return (
 		<div
 			style={{
-				// backgroundColor: "grey",
 				width: "100%",
-				// margin: "auto",
-				// overflowX: "auto",
-				// overflowY: "hidden",
 			}}
 		>
 			<ReactWaves
@@ -168,7 +162,10 @@ export default ({
 				}}
 			></ReactWaves>
 
-			<div id="timeline" style={{ margin: "0 0", width: containerWidth,overflowX:'hidden' }} />
+			<div
+				id="timeline"
+				style={{ margin: "0 0", width: containerWidth, overflowX: "hidden" }}
+			/>
 		</div>
 	);
 };

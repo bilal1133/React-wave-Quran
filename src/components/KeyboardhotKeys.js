@@ -1,7 +1,8 @@
 /** @format */
 
 import React, { useState } from "react";
-import { Button, Modal,OverlayTrigger,Tooltip } from "react-bootstrap";
+import { Button, Modal, OverlayTrigger, Tooltip } from "react-bootstrap";
+import KeyboardIcon from "@material-ui/icons/Keyboard";
 
 export default function KeyboardhotKeys() {
 	const [show, setShow] = useState(false);
@@ -9,10 +10,7 @@ export default function KeyboardhotKeys() {
 	const handleShow = () => setShow(true);
 
 	return (
-		<div
-			className="container-sm  d-flex m-auto"
-			// style={{ maxWidth: "720px" }}
-		>
+		<div className="container-sm  d-flex ">
 			<>
 				<OverlayTrigger
 					placement="top"
@@ -23,9 +21,9 @@ export default function KeyboardhotKeys() {
 						</Tooltip>
 					}
 				>
-					<Button variant="primary" onClick={handleShow}>
-						Hot Keys
-					</Button>
+					<span className={"m-2 mx-2 my-auto px-1 "} onClick={handleShow}>
+						<KeyboardIcon fontSize="large"/>
+					</span>
 				</OverlayTrigger>
 				<Modal show={show} onHide={handleClose}>
 					<Modal.Header closeButton>
@@ -115,25 +113,10 @@ export default function KeyboardhotKeys() {
 										Move Flags
 									</td>
 								</tr>
+
 								<tr>
-									<td>Add 1 word</td>
-									<td>1</td>
-								</tr>
-								<tr>
-									<td>Add 2 word</td>
-									<td>2 </td>
-								</tr>
-								<tr>
-									<td>Add 5 word</td>
-									<td>5 </td>
-								</tr>
-								<tr>
-									<td>Add 9 word</td>
-									<td>9 </td>
-								</tr>
-								<tr>
-									<td>Allign</td>
-									<td>W </td>
+									<td>Undo last placed flag</td>
+									<td>Z</td>
 								</tr>
 								<tr>
 									<td>Automaticaly Snap to Audio</td>

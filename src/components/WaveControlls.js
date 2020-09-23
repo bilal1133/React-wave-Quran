@@ -1,13 +1,41 @@
 /** @format */
 
-import React, { useEffect } from "react";
+import React, { useState } from "react";
 import { Form, OverlayTrigger, Tooltip } from "react-bootstrap";
 
 import { createUseStyles } from "react-jss";
+import PlayArrowIcon from "@material-ui/icons/PlayArrow";
+import StopIcon from "@material-ui/icons/Stop";
+import ZoomInIcon from "@material-ui/icons/ZoomIn";
+import ZoomOutIcon from "@material-ui/icons/ZoomOut";
+import SkipNextIcon from "@material-ui/icons/SkipNext";
+import SkipPreviousIcon from "@material-ui/icons/SkipPrevious";
+import FastForwardIcon from "@material-ui/icons/FastForward";
+import FastRewindIcon from "@material-ui/icons/FastRewind";
+import SlowMotionVideoIcon from "@material-ui/icons/SlowMotionVideo";
+import SpeedIcon from "@material-ui/icons/Speed";
+import FontDownloadIcon from "@material-ui/icons/FontDownload";
+import ArrowDropUpIcon from "@material-ui/icons/ArrowDropUp";
+import ArrowDropDownSharpIcon from "@material-ui/icons/ArrowDropDownSharp";
+import ReplayIcon from "@material-ui/icons/Replay";
+import AllInclusiveIcon from "@material-ui/icons/AllInclusive";
+import FlagIcon from "@material-ui/icons/Flag";
+import LeakAddIcon from "@material-ui/icons/LeakAdd";
+import KeyboardTabIcon from "@material-ui/icons/KeyboardTab";
+
+import Grid from "@material-ui/core/Grid";
+import Slider from "@material-ui/core/Slider";
+import VolumeDown from "@material-ui/icons/VolumeDown";
+import VolumeUp from "@material-ui/icons/VolumeUp";
+
+import KeyboardhotKeys from "./KeyboardhotKeys";
 
 const useStyles = createUseStyles({
-	marginAuto: {
-		margin: "auto",
+	container: {
+		border: "2px solid black",
+		backgroundColor: "rgb(69, 108, 134,0.2)",
+		// color: "white",
+		borderRadius: "5px",
 	},
 });
 
@@ -29,27 +57,28 @@ export default function WaveControlls({
 	clickToChange,
 	undoLastMap,
 	handleLatency,
+	position,
+	zoom,
+	audioRate,
+	fontSize,
+	handleVolume,
+	volume,
+	handleExportData,
+	latency,
+	setLatency,
 }) {
+	const [show, setShow] = useState(false);
 	const classes = useStyles();
 
 	// * 🎹 shotcuts
 
-	document.addEventListener("wheel", mouseWheel);
-
-	function mouseWheel(e) {
-		e.preventDefault();
-		if (e.deltaY / 120 > 0) {
-			console.log("scrolling up !");
-			handleAudioRate("inc");
-		} else {
-			console.log("scrolling down !");
-			handleAudioRate("dec");
-		}
-	}
-
 	document.onkeydown = function (e) {
 		var e = e || window.event; // for IE to cover IEs window event-object
 		// e.preventDefault();
+		if (e.keyCode === 90) {
+			undoLastMap();
+		}
+
 		if (e.keyCode === 37) {
 			skipAhead("bkwrd", undefined, 50);
 			e.preventDefault();
@@ -118,20 +147,26 @@ export default function WaveControlls({
 		if (e.keyCode === 76) {
 			loopCurrentSegment();
 		}
-		if (e.keyCode === 90) {
-			undoLastMap();
-		}
 
 		if (e.keyCode === 96 || e.keyCode === 48) {
 			handleAudioRate(undefined, 1);
 		}
 	};
 	return (
-		<div className="container-sm d-flex justify-content-center   flex-wrap">
+		<div
+			className={
+				"container-sm  d-flex  align-content-center justify-content-center flex-wrap m-3 " +
+				classes.container
+			}
+		>
+		
+			<span className={"badge badge-light  my-auto p-1  "}>
+				{position.toFixed(4)}
+			</span>
 			<OverlayTrigger
 				placement="bottom"
 				overlay={
-					<Tooltip id="button-tooltip-2">
+					<Tooltip id="span-tooltip-2">
 						Play / Pause <b />
 						<p>
 							{" "}
@@ -140,19 +175,19 @@ export default function WaveControlls({
 					</Tooltip>
 				}
 			>
-				<button
-					className="m-2 mx-auto  btn btn-primary"
+				<span
+					className="m-2 mx-2 my-auto p-1    "
 					onClick={() => {
 						setPlaying(!playing);
 					}}
 				>
-					{!playing ? "▶️" : "⏹"}
-				</button>
+					{!playing ? <PlayArrowIcon /> : <StopIcon />}
+				</span>
 			</OverlayTrigger>
 			<OverlayTrigger
 				placement="bottom"
 				overlay={
-					<Tooltip id="button-tooltip-2">
+					<Tooltip id="span-tooltip-2">
 						Zoom In <b />
 						<p>
 							{" "}
@@ -161,20 +196,22 @@ export default function WaveControlls({
 					</Tooltip>
 				}
 			>
-				<button
-					className="btn m-2 mx-auto  btn-secondary"
+				<span
+					className=" m-2 mx-2 my-auto p-1   "
 					onClick={() => {
 						handleZoom("in");
 					}}
 				>
-					{" "}
-					{"➕️"}{" "}
-				</button>
+					<ZoomInIcon />
+				</span>
 			</OverlayTrigger>
+			<span className={"badge badge-light  my-auto p-1  "}>
+				{(zoom - 1) / 100 + 1}X
+			</span>
 			<OverlayTrigger
 				placement="bottom"
 				overlay={
-					<Tooltip id="button-tooltip-2">
+					<Tooltip id="span-tooltip-2">
 						Zoom Out <b />
 						<p>
 							{" "}
@@ -183,20 +220,19 @@ export default function WaveControlls({
 					</Tooltip>
 				}
 			>
-				<button
-					className="btn m-2 mx-auto  btn-secondary"
+				<span
+					className=" m-2 mx-2 my-auto p-1   "
 					onClick={() => {
 						handleZoom("out");
 					}}
 				>
-					{" "}
-					{"➖️"}{" "}
-				</button>
+					<ZoomOutIcon />
+				</span>
 			</OverlayTrigger>
 			<OverlayTrigger
 				placement="bottom"
 				overlay={
-					<Tooltip id="button-tooltip-2">
+					<Tooltip id="span-tooltip-2">
 						Skip Backword <b />
 						<p>
 							{" "}
@@ -205,19 +241,19 @@ export default function WaveControlls({
 					</Tooltip>
 				}
 			>
-				<button
-					className="btn m-2 mx-auto  btn-primary"
+				<span
+					className=" m-2 mx-2 my-auto p-1   "
 					onClick={() => {
-						skipAhead("bkwrd");
+						skipAhead("bkwrd", undefined, 50);
 					}}
 				>
-					{"⏪"}
-				</button>
+					<SkipPreviousIcon />
+				</span>
 			</OverlayTrigger>
 			<OverlayTrigger
 				placement="bottom"
 				overlay={
-					<Tooltip id="button-tooltip-2">
+					<Tooltip id="span-tooltip-2">
 						Skip Forward
 						<b />
 						<p>
@@ -227,63 +263,17 @@ export default function WaveControlls({
 					</Tooltip>
 				}
 			>
-				<button
-					className="btn m-2 mx-auto  btn-primary"
-					onClick={() => skipAhead("frwd")}
+				<span
+					className=" m-2 mx-2 my-auto p-1   "
+					onClick={() => skipAhead("frwd", undefined, 50)}
 				>
-					{"⏩"}
-				</button>
+					<SkipNextIcon />
+				</span>
 			</OverlayTrigger>
 			<OverlayTrigger
 				placement="bottom"
 				overlay={
-					<Tooltip id="button-tooltip-2">
-						Align Not Used Words <b />
-						<p>
-							{" "}
-							<strong>W</strong>
-						</p>
-					</Tooltip>
-				}
-			>
-				<button
-					className={"m-2 mx-auto  btn btn-success"}
-					onClick={() => {
-						alignNotUsedWords();
-					}}
-				>
-					{" "}
-					{"Align"}{" "}
-				</button>
-			</OverlayTrigger>
-
-			<OverlayTrigger
-				placement="bottom"
-				overlay={
-					<Tooltip id="button-tooltip-2">
-						Jump To next Word <b />
-						<p>
-							{" "}
-							<strong>N / O</strong>
-						</p>
-					</Tooltip>
-				}
-			>
-				<button
-					className={"m-2 mx-auto  btn btn-info"}
-					onClick={() => {
-						jumpToNextWord();
-					}}
-				>
-					{" "}
-					{"next"}{" "}
-				</button>
-			</OverlayTrigger>
-
-			<OverlayTrigger
-				placement="bottom"
-				overlay={
-					<Tooltip id="button-tooltip-2">
+					<Tooltip id="span-tooltip-2">
 						Jump to Previous Word <b />
 						<p>
 							{" "}
@@ -292,21 +282,40 @@ export default function WaveControlls({
 					</Tooltip>
 				}
 			>
-				<button
-					className={"m-2 mx-auto  btn btn-info"}
+				<span
+					className={"m-2 mx-2 my-auto p-1 "}
 					onClick={() => {
 						jumpToPreviousWord();
 					}}
 				>
-					{" "}
-					{"Previous"}{" "}
-				</button>
+					<FastRewindIcon />
+				</span>
 			</OverlayTrigger>
-
 			<OverlayTrigger
 				placement="bottom"
 				overlay={
-					<Tooltip id="button-tooltip-2">
+					<Tooltip id="span-tooltip-2">
+						Jump To next Word <b />
+						<p>
+							{" "}
+							<strong>N / O</strong>
+						</p>
+					</Tooltip>
+				}
+			>
+				<span
+					className={"m-2 mx-2 my-auto p-1 "}
+					onClick={() => {
+						jumpToNextWord();
+					}}
+				>
+					<FastForwardIcon />
+				</span>
+			</OverlayTrigger>
+			<OverlayTrigger
+				placement="bottom"
+				overlay={
+					<Tooltip id="span-tooltip-2">
 						Decrease Speed By 0.10 <b />
 						<p>
 							{" "}
@@ -315,20 +324,22 @@ export default function WaveControlls({
 					</Tooltip>
 				}
 			>
-				<button
-					className={"m-2 mx-auto  btn btn-info"}
+				<span
+					className={"m-2 mx-2 my-auto p-1 "}
 					onClick={() => {
 						handleAudioRate("dec");
 					}}
 				>
-					{" "}
-					{"Slower 🐌"}{" "}
-				</button>
+					<SlowMotionVideoIcon />
+				</span>
 			</OverlayTrigger>
+			<span className={"badge badge-light  my-auto p-1  "}>
+				{audioRate.toFixed(2)}
+			</span>
 			<OverlayTrigger
 				placement="bottom"
 				overlay={
-					<Tooltip id="button-tooltip-2">
+					<Tooltip id="span-tooltip-2">
 						Increase Speed By 0.10
 						<b />
 						<p>
@@ -338,60 +349,59 @@ export default function WaveControlls({
 					</Tooltip>
 				}
 			>
-				<button
-					className={"m-2 mx-auto  btn btn-info"}
+				<span
+					className={"m-2 mx-2 my-auto p-1 "}
 					onClick={() => {
 						handleAudioRate("inc");
 					}}
 				>
-					{" "}
-					{"Faster ⚡"}{" "}
-				</button>
+					<SpeedIcon />
+				</span>
 			</OverlayTrigger>
 			<OverlayTrigger
 				placement="bottom"
 				overlay={
-					<Tooltip id="button-tooltip-2">
+					<Tooltip id="span-tooltip-2">
 						Increase Font <b />
 						<p> {/* <strong>A / SpaceBar</strong> */}</p>
 					</Tooltip>
 				}
 			>
-				<button
-					className={"m-2 mx-auto  btn btn-info"}
+				<span
+					className={"m-2 mx-2 my-auto p-1 "}
 					onClick={() => {
 						handleFontSize("inc");
 					}}
 				>
-					{" "}
-					{"Font ++"}{" "}
-				</button>
+					<FontDownloadIcon />
+					<ArrowDropUpIcon />
+				</span>
 			</OverlayTrigger>
+			<span className={"badge badge-light  my-auto p-1  "}>{fontSize}</span>
 			<OverlayTrigger
 				placement="bottom"
 				overlay={
-					<Tooltip id="button-tooltip-2">
+					<Tooltip id="span-tooltip-2">
 						Decrease Font
 						<b />
 						<p> {/* <strong>A / SpaceBar</strong> */}</p>
 					</Tooltip>
 				}
 			>
-				<button
-					className={"m-2 mx-auto  btn btn-info"}
+				<span
+					className={"m-2 mx-2 my-auto p-1 "}
 					onClick={() => {
 						handleFontSize("dec");
 					}}
 				>
-					{" "}
-					{"Font --"}{" "}
-				</button>
+					<FontDownloadIcon />
+					<ArrowDropDownSharpIcon />
+				</span>
 			</OverlayTrigger>
-
 			<OverlayTrigger
 				placement="bottom"
 				overlay={
-					<Tooltip id="button-tooltip-2">
+					<Tooltip id="span-tooltip-2">
 						Undo Last Map Word
 						<b />
 						<p>
@@ -401,20 +411,19 @@ export default function WaveControlls({
 					</Tooltip>
 				}
 			>
-				<button
-					className={"m-2 mx-auto  btn btn-info"}
+				<span
+					className={"m-2 mx-2 my-auto p-1 "}
 					onClick={() => {
 						undoLastMap();
 					}}
 				>
-					{" "}
-					{"Undo Map 🔀"}{" "}
-				</button>
+					<ReplayIcon />
+				</span>
 			</OverlayTrigger>
 			<OverlayTrigger
 				placement="bottom"
 				overlay={
-					<Tooltip id="button-tooltip-2">
+					<Tooltip id="span-tooltip-2">
 						Loop Specific Section <b />
 						<p>
 							{" "}
@@ -423,42 +432,19 @@ export default function WaveControlls({
 					</Tooltip>
 				}
 			>
-				<button
-					className={
-						loop ? "m-2 mx-auto  btn btn-danger" : "m-2 mx-auto  btn btn-info"
-					}
+				<span
+					className={loop ? "m-2 mx-2 my-auto p-1 " : "m-2 mx-2 my-auto p-1 "}
 					onClick={() => {
 						loopCurrentSegment();
 					}}
 				>
-					{" "}
-					{"Loop➰"}{" "}
-				</button>
+					<AllInclusiveIcon />
+				</span>
 			</OverlayTrigger>
 			<OverlayTrigger
 				placement="bottom"
 				overlay={
-					<Tooltip id="button-tooltip-2">
-						Handle Latency
-						<b />
-						<p> {/* <strong>R</strong> */}</p>
-					</Tooltip>
-				}
-			>
-				<button
-					className={"m-2 mx-auto  btn btn-danger"}
-					onClick={() => {
-						handleLatency();
-					}}
-				>
-					{" "}
-					{"Handle Latency"}{" "}
-				</button>
-			</OverlayTrigger>
-			<OverlayTrigger
-				placement="bottom"
-				overlay={
-					<Tooltip id="button-tooltip-2">
+					<Tooltip id="span-tooltip-2">
 						Place Flag onto Audio
 						<b />
 						<p>
@@ -468,20 +454,78 @@ export default function WaveControlls({
 					</Tooltip>
 				}
 			>
-				<button
-					className={"m-2 mx-auto  btn btn-warning"}
+				<span
+					className={"m-2 mx-2 my-auto p-1 "}
 					onClick={() => {
 						handleKeyboardMap();
 					}}
 				>
-					{" "}
-					{"Place Flag"}{" "}
-				</button>
+					<FlagIcon />
+				</span>
 			</OverlayTrigger>
+
 			<OverlayTrigger
 				placement="bottom"
 				overlay={
-					<Tooltip id="button-tooltip-2">
+					<Tooltip id="span-tooltip-2">
+						Handle Latency for all Words.
+						<b />
+						<p> {/* <strong>R</strong> */}</p>
+					</Tooltip>
+				}
+			>
+				<span
+					className={"m-2 mx-2 my-auto p-1 "}
+					onClick={() => {
+						handleLatency();
+					}}
+				>
+					<LeakAddIcon />
+				</span>
+			</OverlayTrigger>
+
+			<OverlayTrigger
+				placement="bottom"
+				overlay={
+					<Tooltip id="span-tooltip-2">
+						Handle Latency for single Word
+						<b />
+						<p> {/* <strong>R</strong> */}</p>
+					</Tooltip>
+				}
+			>
+				<span
+					className={"m-2 mx-2 my-auto p-1 "}
+					onClick={() => {
+						handleLatency(true);
+					}}
+				>
+					<KeyboardTabIcon />
+				</span>
+			</OverlayTrigger>
+
+			<Grid container spacing={2} style={{ width: "150px" }}>
+				<Grid item>
+					<VolumeDown />
+				</Grid>
+				<Grid item xs>
+					<Slider
+						value={volume * 100}
+						onChange={(e, newValue) => {
+							handleVolume(undefined, newValue / 100);
+						}}
+						aria-labelledby="continuous-slider"
+					/>
+				</Grid>
+				<Grid item>
+					<VolumeUp />
+				</Grid>
+			</Grid>
+
+			<OverlayTrigger
+				placement="bottom"
+				overlay={
+					<Tooltip id="span-tooltip-2">
 						Automatically Snap to Audio <b />
 					</Tooltip>
 				}
@@ -489,8 +533,8 @@ export default function WaveControlls({
 				<div
 					className={
 						clickToChange
-							? "m-2 mx-auto   p-2  btn btn-success"
-							: "m-2 mx-auto   p-2 btn btn-outline-primary"
+							? "m-2 mx-2 my-auto p-1   "
+							: "m-2 mx-2 my-auto p-1      "
 					}
 					onClick={() => setClickToChange(!clickToChange)}
 				>
@@ -502,6 +546,45 @@ export default function WaveControlls({
 					/>
 				</div>
 			</OverlayTrigger>
+			<OverlayTrigger
+				placement="bottom"
+				overlay={<Tooltip id="span-tooltip-2">Latency Value</Tooltip>}
+			>
+				<span>
+					<span>
+						Latency
+						<input
+							type="number"
+							placeholder="Latency"
+							value={latency}
+							onChange={(e) => setLatency(e.target.value)}
+							style={{
+								width: "100px",
+								borderRadius: "5px",
+								fontWeight: "bold",
+							}}
+						/>
+					</span>
+				</span>
+			</OverlayTrigger>
+			<OverlayTrigger
+				placement="bottom"
+				overlay={<Tooltip id="span-tooltip-2">Export Data</Tooltip>}
+			>
+				<span
+					className={"m-2 mx-2 my-auto px-1 "}
+					style={{ border: "3px solid black", borderRadius: "10px" }}
+					onClick={() => {
+						handleExportData();
+					}}
+				>
+					Export Data
+				</span>
+			</OverlayTrigger>
+			<div>
+				<KeyboardhotKeys 	 show={show} setShow={setShow} />
+			</div>
+		
 		</div>
 	);
 }
